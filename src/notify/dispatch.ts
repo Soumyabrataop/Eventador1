@@ -96,12 +96,12 @@ async function loadRow(store: Store, eventId: string): Promise<GateRow | null> {
  */
 export function targetMatchesEvent(
   filter: string | null | undefined,
-  event: { categories: string | null; city: string | null },
+  event: { categories: string | null; city: string | null; format?: string | null },
 ): boolean {
   if (!filter) return true;
-  let parsed: { categories?: unknown; cities?: unknown };
+  let parsed: { categories?: unknown; cities?: unknown; formats?: unknown };
   try {
-    parsed = JSON.parse(filter) as { categories?: unknown; cities?: unknown };
+    parsed = JSON.parse(filter) as { categories?: unknown; cities?: unknown; formats?: unknown };
   } catch {
     return true; // invalid filter never suppresses (fail-open, logged by caller)
   }
@@ -113,6 +113,10 @@ export function targetMatchesEvent(
   if (parsed.cities !== undefined) {
     if (!Array.isArray(parsed.cities)) return true;
     if (!event.city || !parsed.cities.includes(event.city)) return false;
+  }
+  if (parsed.formats !== undefined) {
+    if (!Array.isArray(parsed.formats)) return true;
+    if (!event.format || !parsed.formats.includes(event.format)) return false;
   }
   return true;
 }

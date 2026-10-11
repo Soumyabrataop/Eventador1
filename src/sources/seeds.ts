@@ -62,6 +62,10 @@ export const MVP_SOURCES: SourceSeed[] = [
   { slug: "mygov-innovate", kind: "sitemap", sourceType: "GOVERNMENT", level: 3, baseUrl: "https://innovateindia.mygov.in", trustScore: 75, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
   { slug: "startup-india", kind: "sitemap", sourceType: "GOVERNMENT", level: 3, baseUrl: "https://www.startupindia.gov.in", trustScore: 75, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
 
+  // ---- Community / Social Feeds (L6, public RSS) ----
+  { slug: "reddit-hackathons", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/hackathons", feedUrl: "https://www.reddit.com/r/hackathons/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "reddit-developersindia", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/developersIndia", feedUrl: "https://www.reddit.com/r/developersIndia/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+
   // ---- Search discovery (L7, disabled until configured) ----
   { slug: "search-api", kind: "search", sourceType: "SEARCH", level: 7, baseUrl: null, trustScore: 40, enabled: false, rateLimitMs: FAST },
 ];
@@ -77,7 +81,8 @@ export function buildConnector(seed: SourceSeed, fetchFn?: typeof fetch): Source
   }
   if (seed.kind === "rss") {
     return new RssSourceConnector({
-      slug: seed.slug, feedUrl: seed.feedUrl ?? "", trustScore: seed.trustScore, rateLimit, fetchFn,
+      slug: seed.slug, feedUrl: seed.feedUrl ?? "", sourceType: seed.sourceType, level: seed.level,
+      trustScore: seed.trustScore, rateLimit, fetchFn,
     });
   }
   return new SearchApiSourceConnector({ slug: seed.slug, rateLimit, fetchFn });

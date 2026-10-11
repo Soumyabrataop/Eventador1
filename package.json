@@ -1,8 +1,8 @@
 {
-  "name": "india-hackathon-intel",
+  "name": "eventador",
   "version": "0.1.0",
   "private": true,
-  "description": "India Hackathon & Tech Event Intelligence System — Phase 1 Foundation (verification-first, Cloudflare Workers + D1, local SQLite dev mode)",
+  "description": "Eventador — Verified online & tech events intelligence bot for Telegram, Discord, and WhatsApp.",
   "type": "module",
   "engines": {
     "node": ">=22"

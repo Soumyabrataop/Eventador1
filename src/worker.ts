@@ -76,7 +76,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return Response.json({ ok: true, phase: 8, dryRun: env.DRY_RUN ?? "true" });
+      return Response.json({ ok: true, name: "Eventador", phase: 8, dryRun: env.DRY_RUN ?? "true" });
     }
     if (url.pathname === "/telegram-webhook" && request.method === "POST") {
       // Optional shared-secret check (set Telegram webhook with ?secret or

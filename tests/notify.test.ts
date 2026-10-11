@@ -4,7 +4,7 @@ import { migrate, openDatabase } from "../src/db/sqlite.js";
 import { createSqliteStore } from "../src/db/sqliteStore.js";
 import { sendTelegramMessage } from "../src/notify/telegram.js";
 import { buildDiscordPayload, sendDiscordWebhook } from "../src/notify/discord.js";
-import { dispatchPending, loadTargets, queueEligibleAlerts } from "../src/notify/dispatch.js";
+import { dispatchPending, loadTargets, queueEligibleAlerts, targetMatchesEvent } from "../src/notify/dispatch.js";
 import { formatCorrection, formatEventAlert, verificationLabelFor } from "../src/notify/templates.js";
 
 const NOW = "2026-09-30T12:00:00.000Z";
@@ -158,6 +158,14 @@ describe("dispatch gating (spec 65/66)", () => {
       "design-mum:t:all", "design-mum:t:bogus", "design-mum:t:mum",
       "hack-pune:t:all", "hack-pune:t:bogus", "hack-pune:t:hack",
     ]);
+    assert.equal(
+      targetMatchesEvent(JSON.stringify({ formats: ["ONLINE"] }), { categories: null, city: null, format: "ONLINE" }),
+      true,
+    );
+    assert.equal(
+      targetMatchesEvent(JSON.stringify({ formats: ["OFFLINE"] }), { categories: null, city: null, format: "ONLINE" }),
+      false,
+    );
     db.close();
   });
 });

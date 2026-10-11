@@ -9,6 +9,8 @@ import { parseFeed } from "../discovery/rss.js";
 export interface RssSourceOptions {
   slug: string;
   feedUrl: string;
+  sourceType?: "PLATFORM" | "UNIVERSITY" | "GOVERNMENT" | "COMPANY" | "COMMUNITY" | "SEARCH" | "SOCIAL";
+  level?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   trustScore?: number;
   rateLimit?: Partial<RateLimit>;
   fetchFn?: typeof fetch;
@@ -16,12 +18,19 @@ export interface RssSourceOptions {
 }
 
 export class RssSourceConnector implements SourceConnector {
-  private opts: Required<Omit<RssSourceOptions, "rateLimit" | "fetchFn">> & { rateLimit: RateLimit; fetchFn?: typeof fetch };
+  private opts: Required<Omit<RssSourceOptions, "rateLimit" | "fetchFn" | "sourceType" | "level">> & {
+    sourceType: "PLATFORM" | "UNIVERSITY" | "GOVERNMENT" | "COMPANY" | "COMMUNITY" | "SEARCH" | "SOCIAL";
+    level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    rateLimit: RateLimit;
+    fetchFn?: typeof fetch;
+  };
 
   constructor(opts: RssSourceOptions) {
     this.opts = {
       slug: opts.slug,
       feedUrl: opts.feedUrl,
+      sourceType: opts.sourceType ?? "PLATFORM",
+      level: opts.level ?? 5,
       trustScore: opts.trustScore ?? 60,
       maxItems: opts.maxItems ?? 20,
       rateLimit: { ...DEFAULT_RATE_LIMIT, ...opts.rateLimit },
@@ -34,11 +43,11 @@ export class RssSourceConnector implements SourceConnector {
   }
 
   type(): "PLATFORM" | "UNIVERSITY" | "GOVERNMENT" | "COMPANY" | "COMMUNITY" | "SEARCH" | "SOCIAL" {
-    return "PLATFORM";
+    return this.opts.sourceType;
   }
 
-  level(): 5 {
-    return 5; // trusted platform/aggregator until proven official
+  level(): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+    return this.opts.level;
   }
 
   getRateLimit(): RateLimit {

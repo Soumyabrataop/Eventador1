@@ -17,6 +17,7 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run build
       # Dry-run by default. Set LOOP_LIVE=true + notification secrets to go live.
       - name: automation loop
         env:

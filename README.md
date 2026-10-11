@@ -1,10 +1,14 @@
-# India Hackathon & Tech Event Intelligence System
+<p align="center">
+  <img src="Eventador%20Logo.png" alt="Eventador Logo" width="160" />
+</p>
 
-Verification-first event discovery and alert platform. **Trustworthy delivery, not event count.**
+# Eventador
 
-> Phase 2 (Discovery) is implemented. Notifications (Telegram/Discord), scheduling,
-> and WhatsApp are intentionally **not live yet** — spec §76 requires verification
-> before notifications.
+**Autonomous intelligence bot for discovering and verifying 100% free online hackathons, coding competitions, and tech events.**
+
+> **Core Philosophy:** Trustworthy delivery, not event count. Only genuine, verified events with confirmed first-party registration links reach users. Zero harmful links, zero phishing, zero paid paywalls.
+
+Eventador monitors platforms (Devfolio, Unstop, MLH, HackerEarth, Devpost, Kaggle) and community feeds (Reddit, LinkedIn pointers, tech forums) to deliver verified alerts to **Telegram Channels/Groups**, **Discord Servers**, and **WhatsApp Communities/Channels**.
 
 ## Quickstart (local SQLite dev mode)
 
