@@ -22,6 +22,7 @@
     "loop": "node --no-warnings dist/scripts/runLoop.js",
     "admin": "node --no-warnings dist/scripts/admin.js",
     "notify": "node --no-warnings dist/scripts/notify.js",
+    "start": "node --no-warnings dist/scripts/daemon.js --live",
     "daemon": "node --no-warnings dist/scripts/daemon.js",
     "sync": "node --no-warnings dist/scripts/syncCloudflare.js",
     "dry-run": "node --no-warnings dist/scripts/dryRun.js"

@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: eventador-backend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: PORT
+        value: 10000
+      - key: DRY_RUN
+        value: false
+      # Fill these in Render Dashboard > Environment if you want live Telegram/Discord/WhatsApp or Cloudflare sync:
+      - key: CLOUDFLARE_WORKER_URL
+        sync: false
+      - key: SYNC_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
