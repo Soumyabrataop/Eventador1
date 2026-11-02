@@ -76,3 +76,4 @@ test("Seed registry validates OSINT connector seed", () => {
   assert.equal(connector.name(), "osint-dork-radar");
   assert.equal(connector.type(), "SOCIAL");
 });
+

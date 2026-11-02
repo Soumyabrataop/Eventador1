@@ -8,7 +8,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && node --input-type=module -e \"import {cpSync,mkdirSync} from 'node:fs';mkdirSync('dist/src/db',{recursive:true});cpSync('src/db/schema.sql','dist/src/db/schema.sql');console.log('assets copied')\"",
+    "build:frontend": "node scripts/buildFrontend.js",
+    "build": "node scripts/buildFrontend.js && tsc -p tsconfig.json && node --input-type=module -e \"import {cpSync,mkdirSync} from 'node:fs';mkdirSync('dist/src/db',{recursive:true});cpSync('src/db/schema.sql','dist/src/db/schema.sql');console.log('assets copied')\"",
     "typecheck": "tsc --noEmit",
     "test": "npm run build && node --no-warnings --test dist/tests/*.test.js",
     "test:verbose": "npm run build && node --no-warnings --test --test-reporter=spec dist/tests/*.test.js",
