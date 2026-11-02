@@ -118,13 +118,13 @@ describe("worker entrypoint (Phase 8)", () => {
     assert.equal(body.ok, true);
   });
 
-  it("serves / Web Portal with HTML content", async () => {
+  it("redirects / to Cloudflare Pages static web portal", async () => {
     const res = await worker.fetch(new Request("https://x.example/"), { DB: createFakeD1(openDatabase(":memory:")) } as Env);
-    assert.equal(res.status, 200);
-    assert.ok(res.headers.get("content-type")?.includes("text/html"));
-    const html = await res.text();
-    assert.ok(html.includes("Eventador"));
-    assert.ok(html.includes("Discover Verified"));
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get("location"), "https://app-eventador.pages.dev/");
+
+
+
   });
 
   it("serves /api/events with filters and results", async () => {

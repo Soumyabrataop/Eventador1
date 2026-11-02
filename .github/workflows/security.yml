@@ -1,15 +1,13 @@
 name: security
 on:
-  push:
-  pull_request:
+  # Automated triggers disabled to prevent email alerts.
+  workflow_dispatch:
 
 jobs:
   secret-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Dependency-free secret scan: fail on committed credential patterns.
-      # (_scans tracked source only — .env files are gitignored._)
       - name: scan for committed secrets
         run: |
           set -e

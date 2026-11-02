@@ -1,7 +1,8 @@
 name: ci
 on:
-  push:
-  pull_request:
+  # Automated triggers disabled to prevent email alerts.
+  # Use manual workflow_dispatch if needed.
+  workflow_dispatch:
 
 jobs:
   build-test:

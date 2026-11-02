@@ -75,20 +75,24 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    // 1. Health check
-    if (url.pathname === "/health") {
-      return Response.json({ ok: true, name: "Eventador", phase: 8, dryRun: env.DRY_RUN ?? "true" });
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-sync-secret",
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
     }
 
-    // 2. Interactive Web Portal
+    // 1. Health check
+    if (url.pathname === "/health") {
+      return Response.json({ ok: true, name: "Eventador API", phase: 8, dryRun: env.DRY_RUN ?? "true" }, { headers: corsHeaders });
+    }
+
+    // 2. Web Portal Redirect (Static UI hosted on Cloudflare Pages to preserve Worker limits)
     if (url.pathname === "/" || url.pathname === "/index.html") {
-      const { renderWebPage } = await import("./web/app.js");
-      return new Response(renderWebPage(), {
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "public, max-age=300",
-        },
-      });
+      return Response.redirect("https://app-eventador.pages.dev", 302);
     }
 
     // 3. Filterable Events API
@@ -132,9 +136,9 @@ export default {
 
         sql += " ORDER BY start_date ASC LIMIT 100";
         const events = await store.query(sql, ...params);
-        return Response.json({ ok: true, count: events.length, events });
+        return Response.json({ ok: true, count: events.length, events }, { headers: corsHeaders });
       } catch (e) {
-        return Response.json({ ok: false, error: e instanceof Error ? e.message : "QUERY_FAILED" }, { status: 500 });
+        return Response.json({ ok: false, error: e instanceof Error ? e.message : "QUERY_FAILED" }, { status: 500, headers: corsHeaders });
       }
     }
 
