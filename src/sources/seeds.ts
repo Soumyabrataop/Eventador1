@@ -7,11 +7,12 @@
 import { RssSourceConnector } from "./rssSource.js";
 import { SearchApiSourceConnector } from "./searchApiSource.js";
 import { SitemapSourceConnector } from "./sitemapSource.js";
+import { OsintDorkConnector } from "./osintDorks.js";
 import type { SourceConnector, SourceType } from "./types.js";
 
 export interface SourceSeed {
   slug: string;
-  kind: "sitemap" | "rss" | "search";
+  kind: "sitemap" | "rss" | "search" | "osint";
   sourceType: SourceType;
   level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   baseUrl: string | null;
@@ -76,6 +77,9 @@ export const MVP_SOURCES: SourceSeed[] = [
   { slug: "reddit-hackathons", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/hackathons", feedUrl: "https://www.reddit.com/r/hackathons/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
   { slug: "reddit-developersindia", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/developersIndia", feedUrl: "https://www.reddit.com/r/developersIndia/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
 
+  // ---- OSINT Social Media & Search Dorks (L6) ----
+  { slug: "osint-dork-radar", kind: "osint", sourceType: "SOCIAL", level: 6, baseUrl: null, trustScore: 50, enabled: true, rateLimitMs: MEDIUM },
+
   // ---- Search discovery (L7, disabled until configured) ----
   { slug: "search-api", kind: "search", sourceType: "SEARCH", level: 7, baseUrl: null, trustScore: 40, enabled: false, rateLimitMs: FAST },
 ];
@@ -93,6 +97,11 @@ export function buildConnector(seed: SourceSeed, fetchFn?: typeof fetch): Source
     return new RssSourceConnector({
       slug: seed.slug, feedUrl: seed.feedUrl ?? "", sourceType: seed.sourceType, level: seed.level,
       trustScore: seed.trustScore, rateLimit, fetchFn,
+    });
+  }
+  if (seed.kind === "osint") {
+    return new OsintDorkConnector({
+      slug: seed.slug, trustScore: seed.trustScore, rateLimit, fetchFn,
     });
   }
   return new SearchApiSourceConnector({ slug: seed.slug, rateLimit, fetchFn });
