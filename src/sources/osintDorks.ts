@@ -32,39 +32,46 @@ export interface OsintDorkDefinition {
  */
 export const POPULAR_OSINT_DORKS: OsintDorkDefinition[] = [
   {
-    platform: "Google Search (Luma)",
-    category: "Google Dork",
-    query: 'site:lu.ma ("Bengaluru" OR "Delhi" OR "Mumbai" OR "Hyderabad" OR "Pune") ("meetup" OR "hackathon" OR "conference")',
-    dorkUrl: 'https://www.google.com/search?q=site%3Alu.ma+(%22Bengaluru%22+OR+%22Delhi%22+OR+%22Mumbai%22+OR+%22Hyderabad%22+OR+%22Pune%22)+(%22meetup%22+OR+%22hackathon%22+OR+%22conference%22)',
-    description: "Finds unlisted and community tech meetups hosted across Indian tech hubs on Lu.ma.",
+    platform: "Google Search (Lu.ma Radar)",
+    category: "Luma Radar",
+    query: 'site:lu.ma ("meetup" OR "hackathon" OR "demo day" OR "founder coffee")',
+    dorkUrl: 'https://www.google.com/search?q=site%3Alu.ma+(%22meetup%22+OR+%22hackathon%22+OR+%22demo+day%22+OR+%22founder+coffee%22)',
+    description: "Finds unlisted and community tech meetups, founder demo days, and AI workshops on Lu.ma.",
   },
   {
-    platform: "Google Search (LinkedIn)",
+    platform: "Google Search (LinkedIn Events)",
     category: "Google Dork",
-    query: 'site:linkedin.com/events ("developer meetup" OR "hackathon" OR "tech summit") ("India" OR "Bengaluru")',
-    dorkUrl: 'https://www.google.com/search?q=site%3Alinkedin.com%2Fevents+(%22developer+meetup%22+OR+%22hackathon%22+OR+%22tech+summit%22)+(%22India%22+OR+%22Bengaluru%22)',
-    description: "Discovers corporate and startup developer conferences and hackathons announced on LinkedIn.",
+    query: 'site:linkedin.com/events ("developer meetup" OR "hackathon" OR "tech summit" OR "AI conference")',
+    dorkUrl: 'https://www.google.com/search?q=site%3Alinkedin.com%2Fevents+(%22developer+meetup%22+OR+%22hackathon%22+OR+%22tech+summit%22+OR+%22AI+conference%22)',
+    description: "Discovers enterprise, corporate, and venture-backed developer conferences announced on LinkedIn.",
   },
   {
     platform: "Google Search (Twitter / X)",
     category: "Google Dork",
-    query: '(site:twitter.com OR site:x.com) ("hackathon" OR "tech meetup") ("register" OR "rsvp") ("India" OR "Bengaluru" OR "Delhi")',
-    dorkUrl: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22tech+meetup%22)+(%22register%22+OR+%22rsvp%22)+(%22India%22+OR+%22Bengaluru%22+OR+%22Delhi%22)',
-    description: "Finds fresh flash hackathon announcements and RSVP links posted on Twitter/X.",
+    query: '(site:twitter.com OR site:x.com) ("hackathon" OR "tech meetup" OR "bounty" OR "code sprint") ("register" OR "rsvp")',
+    dorkUrl: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22tech+meetup%22+OR+%22bounty%22+OR+%22code+sprint%22)+(%22register%22+OR+%22rsvp%22)',
+    description: "Finds fresh flash hackathon announcements, bursaries, and registration links posted on Twitter/X.",
+  },
+  {
+    platform: "Dev.to Community Radar",
+    category: "Google Dork",
+    query: 'site:dev.to ("hackathon announcement" OR "call for proposals" OR "virtual meetup" OR "dev event")',
+    dorkUrl: 'https://www.google.com/search?q=site%3Adev.to+(%22hackathon+announcement%22+OR+%22call+for+proposals%22+OR+%22virtual+meetup%22+OR+%22dev+event%22)',
+    description: "Discovers international online hackathons, open source contests, and global dev challenges published on Dev.to.",
+  },
+  {
+    platform: "Reddit Global Tech Radar",
+    category: "Reddit Feed",
+    query: 'site:reddit.com (r/hackathons OR r/developersIndia OR r/webdev OR r/cscareerquestions) ("hackathon" OR "meetup")',
+    dorkUrl: 'https://www.google.com/search?q=site%3Areddit.com+(r%2Fhackathons+OR+r%2FdevelopersIndia+OR+r%2Fwebdev+OR+r%2Fcscareerquestions)+(%22hackathon%22+OR+%22meetup%22)',
+    description: "Live discussions, team formation threads, and local city tech meetup announcements across developer subreddits.",
   },
   {
     platform: "GitHub Events OSINT",
     category: "GitHub OSINT",
-    query: 'site:github.com in:readme ("hackathon" OR "tech-events" OR "meetups") ("India" OR "2026")',
-    dorkUrl: 'https://www.google.com/search?q=site%3Agithub.com+in%3Areadme+(%22hackathon%22+OR+%22tech-events%22+OR+%22meetups%22)+(%22India%22+OR+%222026%22)',
-    description: "Discovers open-source student-run hackathons and community calendars maintained in GitHub readmes.",
-  },
-  {
-    platform: "Reddit DevelopersIndia",
-    category: "Reddit Feed",
-    query: 'subreddit:developersIndia (flair:Event OR "hackathon" OR "meetup")',
-    dorkUrl: 'https://www.reddit.com/r/developersIndia/search?q=flair%3AEvent+OR+hackathon+OR+meetup&restrict_sr=1&sort=new',
-    description: "Live Indian developer discussions, local city meetups, and hackathon team formations.",
+    query: 'site:github.com in:readme ("upcoming hackathon" OR "tech-events" OR "meetups" OR "developer-calendar")',
+    dorkUrl: 'https://www.google.com/search?q=site%3Agithub.com+in%3Areadme+(%22upcoming+hackathon%22+OR+%22tech-events%22+OR+%22meetups%22+OR+%22developer-calendar%22)',
+    description: "Discovers open-source student hackathons and community calendars maintained in GitHub markdown repositories.",
   },
 ];
 
@@ -222,6 +229,50 @@ export class OsintDorkConnector implements SourceConnector {
       }
     } catch {
       // Non-fatal fallback for GitHub OSINT
+    }
+
+    // 3. Dev.to API OSINT (public developer events, hackathons, and calls for proposals)
+    try {
+      const devtoRes = await this.fetchFn("https://dev.to/api/articles?tag=hackathon&per_page=8", {
+        headers: {
+          "User-Agent": "EventadorBot/1.0 (+https://eventadorapp.pages.dev)",
+          Accept: "application/json",
+        },
+      });
+      if (devtoRes.ok) {
+        const articles = (await devtoRes.json()) as Array<{
+          title?: string;
+          url?: string;
+          description?: string;
+          tag_list?: string[];
+        }>;
+        for (const art of articles ?? []) {
+          if (!art.title || !art.url) continue;
+          const norm = normalizeUrl(art.url);
+          if (!norm.valid || !norm.canonical) continue;
+
+          const cleanTitle = sanitizeUntrustedText(art.title).text;
+          const cleanDesc = sanitizeUntrustedText(art.description ?? art.title).text;
+
+          items.push({
+            sourceUrl: norm.canonical,
+            rawContent: cleanDesc,
+            fetchedAt: now,
+            extracted: {
+              title: cleanTitle,
+              organizer: "Dev.to Community",
+              event_type: ["HACKATHON"],
+              event_type_tag: "HACKATHON",
+              format: "ONLINE",
+              is_free: 1,
+              event_url: norm.canonical,
+              confidence: 0.65,
+            },
+          });
+        }
+      }
+    } catch {
+      // Non-fatal fallback for Dev.to API
     }
 
     return items;

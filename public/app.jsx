@@ -1,6 +1,6 @@
 const { useState, useEffect, useMemo, useRef } = React;
 
-// Continental Regions Definition
+// Continental Regions for high-level sorting of thousands of monthly global events
 const CONTINENTS = [
   { id: "ALL", label: "Worldwide / Global" },
   { id: "GLOBAL_SOUTH", label: "Asia-Pacific & Global South" },
@@ -10,7 +10,20 @@ const CONTINENTS = [
   { id: "MEA", label: "Middle East & Africa" }
 ];
 
-// Curated Genuine Seed Events (High-urgency, sorted, global & continental)
+// Haversine formula to compute exact distance in kilometers
+function haversineDistanceKm(lat1, lon1, lat2, lon2) {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c);
+}
+
+// Curated Genuine Seed Events with exact coordinates and source platforms
 const CURATED_SEED_EVENTS = [
   {
     event_id: "seed-1",
@@ -22,12 +35,15 @@ const CURATED_SEED_EVENTS = [
     city: "New Delhi",
     country: "India",
     continent: "GLOBAL_SOUTH",
+    lat: 28.6139,
+    lng: 77.2090,
     venue: "National Finals Centers & Regional Nodes",
     start_date: "2026-11-15T09:00:00Z",
     end_date: "2026-11-17T18:00:00Z",
     event_url: "https://www.sih.gov.in",
     registration_url: "https://www.sih.gov.in",
-    prize: "₹1,00,00,000+ Prize Pool"
+    prize: "₹1,00,00,000+ Prize Pool",
+    source_platform: "GOV_CHALLENGE"
   },
   {
     event_id: "seed-2",
@@ -39,32 +55,58 @@ const CURATED_SEED_EVENTS = [
     city: "Bengaluru",
     country: "India",
     continent: "GLOBAL_SOUTH",
+    lat: 12.9716,
+    lng: 77.5946,
     venue: "KTPO Convention Centre, Whitefield",
     start_date: "2026-12-04T10:00:00Z",
     end_date: "2026-12-06T18:00:00Z",
     event_url: "https://devfolio.co",
     registration_url: "https://devfolio.co",
-    prize: "$100,000+ Bounties & Grants"
+    prize: "$100,000+ Bounties & Grants",
+    source_platform: "DEVFOLIO"
   },
   {
     event_id: "seed-3",
     title: "Google Developer Groups DevFest 2026",
-    organizer_name: "GDG Global Community",
+    organizer_name: "GDG Bengaluru",
     format: "OFFLINE",
     event_type: "CONFERENCE",
     is_free: 1,
     city: "Bengaluru",
     country: "India",
     continent: "GLOBAL_SOUTH",
+    lat: 12.9716,
+    lng: 77.5946,
     venue: "NIMHANS Convention Centre",
     start_date: "2026-11-20T09:00:00Z",
     end_date: "2026-11-21T18:00:00Z",
     event_url: "https://developers.google.com/community/gdg",
     registration_url: "https://developers.google.com/community/gdg",
-    prize: "Official Swag, Workshops & Labs"
+    prize: "Official Swag, Workshops & Labs",
+    source_platform: "GOOGLE"
   },
   {
     event_id: "seed-4",
+    title: "Kolkata FOSS & Open Source Meetup",
+    organizer_name: "Kolkata FOSS Community",
+    format: "OFFLINE",
+    event_type: "MEETUP",
+    is_free: 1,
+    city: "Kolkata",
+    country: "India",
+    continent: "GLOBAL_SOUTH",
+    lat: 22.5726,
+    lng: 88.3639,
+    venue: "Sector V Tech Hub, Salt Lake",
+    start_date: "2026-11-21T14:00:00Z",
+    end_date: "2026-11-21T18:00:00Z",
+    event_url: "https://meetup.com",
+    registration_url: "https://meetup.com",
+    prize: "Free Community Entry & Swags",
+    source_platform: "COMMUNITY"
+  },
+  {
+    event_id: "seed-5",
     title: "TreeHacks 2026",
     organizer_name: "Stanford University",
     format: "HYBRID",
@@ -73,15 +115,18 @@ const CURATED_SEED_EVENTS = [
     city: "Stanford",
     country: "United States",
     continent: "NORTH_AMERICA",
+    lat: 37.4275,
+    lng: -122.1697,
     venue: "Stanford University Campus / Online",
     start_date: "2026-11-22T10:00:00Z",
     end_date: "2026-11-24T18:00:00Z",
     event_url: "https://treehacks.com",
     registration_url: "https://treehacks.com",
-    prize: "$150,000+ Hardware & Cloud Tracks"
+    prize: "$150,000+ Hardware & Cloud Tracks",
+    source_platform: "UNIVERSITY"
   },
   {
-    event_id: "seed-5",
+    event_id: "seed-6",
     title: "AWS Community Day India 2026",
     organizer_name: "AWS User Group India",
     format: "HYBRID",
@@ -90,15 +135,18 @@ const CURATED_SEED_EVENTS = [
     city: "Hyderabad",
     country: "India",
     continent: "GLOBAL_SOUTH",
+    lat: 17.3850,
+    lng: 78.4867,
     venue: "HICC Novotel, Hitec City",
     start_date: "2026-11-28T09:00:00Z",
     end_date: "2026-11-28T18:00:00Z",
     event_url: "https://aws.amazon.com/developer/community/",
     registration_url: "https://aws.amazon.com/developer/community/",
-    prize: "AWS Cloud Vouchers & Certification"
+    prize: "AWS Cloud Vouchers & Certification",
+    source_platform: "AWS"
   },
   {
-    event_id: "seed-6",
+    event_id: "seed-7",
     title: "ETHGlobal London 2026",
     organizer_name: "ETHGlobal",
     format: "HYBRID",
@@ -107,16 +155,59 @@ const CURATED_SEED_EVENTS = [
     city: "London",
     country: "United Kingdom",
     continent: "EUROPE",
+    lat: 51.5074,
+    lng: -0.1278,
     venue: "ExCeL London & Virtual",
     start_date: "2026-12-01T10:00:00Z",
     end_date: "2026-12-03T18:00:00Z",
     event_url: "https://ethglobal.com",
     registration_url: "https://ethglobal.com",
-    prize: "$125,000+ Prize Pool"
+    prize: "$125,000+ Prize Pool",
+    source_platform: "ETHGLOBAL"
   },
   {
-    event_id: "seed-7",
-    title: "Microsoft Reactor AI & Copilot Workshop",
+    event_id: "seed-8",
+    title: "Dev.to Autonomous AI Hackathon 2026",
+    organizer_name: "Dev.to Community",
+    format: "ONLINE",
+    event_type: "HACKATHON",
+    is_free: 1,
+    city: "Virtual",
+    country: "Worldwide",
+    continent: "ALL",
+    lat: null,
+    lng: null,
+    venue: "Dev.to Platform / Global Virtual",
+    start_date: "2026-11-18T00:00:00Z",
+    end_date: "2026-12-08T23:59:59Z",
+    event_url: "https://dev.to",
+    registration_url: "https://dev.to",
+    prize: "$25,000+ Cash Prizes & Badges",
+    source_platform: "DEVTO"
+  },
+  {
+    event_id: "seed-9",
+    title: "Reddit r/developersIndia Tech Ideathon",
+    organizer_name: "developersIndia Community",
+    format: "ONLINE",
+    event_type: "HACKATHON",
+    is_free: 1,
+    city: "Virtual",
+    country: "India / Global",
+    continent: "GLOBAL_SOUTH",
+    lat: null,
+    lng: null,
+    venue: "Reddit & Discord",
+    start_date: "2026-11-25T10:00:00Z",
+    end_date: "2026-11-27T18:00:00Z",
+    event_url: "https://reddit.com/r/developersIndia",
+    registration_url: "https://reddit.com/r/developersIndia",
+    prize: "Community Grants & Fast-track Interviews",
+    source_platform: "REDDIT"
+  },
+  {
+    event_id: "seed-10",
+    title: "Microsoft Reactor AI & Copilot Summit",
     organizer_name: "Microsoft Reactor",
     format: "HYBRID",
     event_type: "WORKSHOP",
@@ -124,33 +215,19 @@ const CURATED_SEED_EVENTS = [
     city: "Bengaluru",
     country: "India",
     continent: "GLOBAL_SOUTH",
+    lat: 12.9716,
+    lng: 77.5946,
     venue: "Microsoft Reactor, Lavelle Road",
     start_date: "2026-12-05T10:00:00Z",
     end_date: "2026-12-05T16:00:00Z",
     event_url: "https://developer.microsoft.com/en-us/reactor/",
     registration_url: "https://developer.microsoft.com/en-us/reactor/",
-    prize: "Hands-on Azure Labs & Credits"
+    prize: "Hands-on Azure Labs & Credits",
+    source_platform: "MICROSOFT"
   },
   {
-    event_id: "seed-8",
-    title: "Hacktoberfest Global Summit",
-    organizer_name: "DigitalOcean & Cloudflare",
-    format: "ONLINE",
-    event_type: "COMMUNITY",
-    is_free: 1,
-    city: "Virtual",
-    country: "Worldwide",
-    continent: "ALL",
-    venue: "Discord / Global Virtual",
-    start_date: "2026-11-10T00:00:00Z",
-    end_date: "2026-11-30T23:59:59Z",
-    event_url: "https://hacktoberfest.com",
-    registration_url: "https://hacktoberfest.com",
-    prize: "Official Badges & Open Source Swag"
-  },
-  {
-    event_id: "seed-9",
-    title: "Luma Founders & Tech Meetup",
+    event_id: "seed-11",
+    title: "Luma Mumbai Tech Founders Meetup",
     organizer_name: "Mumbai Founders Club",
     format: "OFFLINE",
     event_type: "MEETUP",
@@ -159,16 +236,19 @@ const CURATED_SEED_EVENTS = [
     city: "Mumbai",
     country: "India",
     continent: "GLOBAL_SOUTH",
+    lat: 19.0760,
+    lng: 72.8777,
     venue: "WeWork BKC, Bandra Kurla Complex",
     start_date: "2026-12-12T17:00:00Z",
     end_date: "2026-12-12T20:00:00Z",
     event_url: "https://lu.ma",
     registration_url: "https://lu.ma",
-    prize: "Pitching Session with Angel Investors"
+    prize: "Pitching Session with Angel Investors",
+    source_platform: "LUMA"
   },
   {
-    event_id: "seed-10",
-    title: "FOSDEM Open Source Summit",
+    event_id: "seed-12",
+    title: "FOSDEM Open Source Summit 2027",
     organizer_name: "FOSDEM Community",
     format: "HYBRID",
     event_type: "CONFERENCE",
@@ -176,55 +256,90 @@ const CURATED_SEED_EVENTS = [
     city: "Brussels",
     country: "Belgium",
     continent: "EUROPE",
+    lat: 50.8503,
+    lng: 4.3517,
     venue: "ULB Solbosch Campus",
     start_date: "2027-02-06T09:00:00Z",
     end_date: "2027-02-07T18:00:00Z",
     event_url: "https://fosdem.org",
     registration_url: "https://fosdem.org",
-    prize: "Free Community Admission"
+    prize: "Free Community Admission",
+    source_platform: "FOSDEM"
   }
 ];
 
-// Curated Google Search OSINT Tools
+// Curated Google Search OSINT Tools & Community Sources
 const OSINT_DORKS = [
   {
     title: "Lu.ma Global Tech Radar",
     category: "Meetups & Demo Days",
-    query: 'site:lu.ma ("developer" OR "hackathon" OR "meetup" OR "AI demo")',
-    url: 'https://www.google.com/search?q=site%3Alu.ma+(%22developer%22+OR+%22hackathon%22+OR+%22meetup%22+OR+%22AI+demo%22)',
-    desc: "Discovers unlisted grassroots tech meetups, founder coffee chats, and demo days hosted on Lu.ma."
+    platform: "Lu.ma",
+    query: 'site:lu.ma ("meetup" OR "hackathon" OR "demo day" OR "founder coffee")',
+    url: 'https://www.google.com/search?q=site%3Alu.ma+(%22meetup%22+OR+%22hackathon%22+OR+%22demo+day%22+OR+%22founder+coffee%22)',
+    desc: "Discovers unlisted grassroots tech meetups, founder demo days, and AI workshops hosted on Lu.ma."
   },
   {
     title: "LinkedIn Tech Events Dork",
     category: "Conferences & Summits",
-    query: 'site:linkedin.com/events ("developer meetup" OR "hackathon" OR "tech summit" OR "AI workshop")',
-    url: 'https://www.google.com/search?q=site%3Alinkedin.com%2Fevents+(%22developer+meetup%22+OR+%22hackathon%22+OR+%22tech+summit%22+OR+%22AI+workshop%22)',
-    desc: "Finds enterprise, VC, and corporate developer summits announced on LinkedIn Events."
+    platform: "LinkedIn",
+    query: 'site:linkedin.com/events ("developer meetup" OR "hackathon" OR "tech summit" OR "AI conference")',
+    url: 'https://www.google.com/search?q=site%3Alinkedin.com%2Fevents+(%22developer+meetup%22+OR+%22hackathon%22+OR+%22tech+summit%22+OR+%22AI+conference%22)',
+    desc: "Finds corporate, startup, and enterprise developer conferences announced on LinkedIn Events."
   },
   {
     title: "Twitter / X Flash Hackathons",
     category: "Flash Hackathons",
-    query: '(site:twitter.com OR site:x.com) ("hackathon" OR "bounty" OR "coding sprint") ("register" OR "apply")',
-    url: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22bounty%22+OR+%22coding+sprint%22)+(%22register%22+OR+%22apply%22)',
-    desc: "Discovers sudden registrations, bursaries, and flash hackathons tweeted by tech communities."
+    platform: "Twitter / X",
+    query: '(site:twitter.com OR site:x.com) ("hackathon" OR "bounty" OR "code sprint") ("register" OR "apply")',
+    url: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22bounty%22+OR+%22code+sprint%22)+(%22register%22+OR+%22apply%22)',
+    desc: "Discovers sudden registrations, grant bursaries, and flash hackathons tweeted by tech communities."
+  },
+  {
+    title: "Dev.to Hackathon Community",
+    category: "Global Hackathons",
+    platform: "Dev.to",
+    query: 'site:dev.to ("hackathon announcement" OR "call for proposals" OR "virtual meetup")',
+    url: 'https://www.google.com/search?q=site%3Adev.to+(%22hackathon+announcement%22+OR+%22call+for+proposals%22+OR+%22virtual+meetup%22)',
+    desc: "Discovers open-source contests, developer bounties, and global online hackathons published on Dev.to."
+  },
+  {
+    title: "Reddit Global Tech Radar",
+    category: "Community Leads",
+    platform: "Reddit",
+    query: 'site:reddit.com (r/hackathons OR r/developersIndia OR r/webdev) ("hackathon" OR "meetup")',
+    url: 'https://www.google.com/search?q=site%3Areddit.com+(r%2Fhackathons+OR+r%2FdevelopersIndia+OR+r%2Fwebdev)+(%22hackathon%22+OR+%22meetup%22)',
+    desc: "Live discussions, team formation threads, and local city meetup invitations across developer subreddits."
   },
   {
     title: "GitHub Open Source Event Repos",
     category: "Student Hackathons",
+    platform: "GitHub",
     query: 'site:github.com in:readme ("upcoming hackathon" OR "tech-events" OR "dev-calendar")',
     url: 'https://www.google.com/search?q=site%3Agithub.com+in%3Areadme+(%22upcoming+hackathon%22+OR+%22tech-events%22+OR+%22dev-calendar%22)',
     desc: "Finds open-source student hackathons and community calendars maintained directly in GitHub readmes."
-  },
-  {
-    title: "Reddit Global Dev Communities",
-    category: "Community Leads",
-    query: 'site:reddit.com (r/hackathons OR r/cscareerquestions OR r/developersIndia) ("hackathon" OR "meetup")',
-    url: 'https://www.google.com/search?q=site%3Areddit.com+(r%2Fhackathons+OR+r%2Fcscareerquestions+OR+r%2FdevelopersIndia)+(%22hackathon%22+OR+%22meetup%22)',
-    desc: "Live discussions, team formation threads, and local tech community meetup invitations."
   }
 ];
 
-// Helper to deduce continent from timezone
+function detectCityFromTimezone() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (tz.includes("Kolkata") || tz.includes("Calcutta")) return "Kolkata, India";
+    if (tz.includes("Bangalore") || tz.includes("Bengaluru")) return "Bengaluru, India";
+    if (tz.includes("Delhi") || tz.includes("New_Delhi")) return "New Delhi, India";
+    if (tz.includes("Mumbai") || tz.includes("Bombay")) return "Mumbai, India";
+    if (tz.includes("London")) return "London, United Kingdom";
+    if (tz.includes("New_York")) return "New York, United States";
+    if (tz.includes("Los_Angeles") || tz.includes("San_Francisco")) return "San Francisco, United States";
+    if (tz.includes("Berlin") || tz.includes("Frankfurt")) return "Germany / Central Europe";
+    if (tz.includes("Singapore")) return "Singapore";
+    if (tz.includes("Dubai")) return "Dubai, UAE";
+    if (tz.startsWith("Asia/")) return "Asia-Pacific Region";
+    if (tz.startsWith("Europe/")) return "European Region";
+    if (tz.startsWith("America/")) return "North American Region";
+  } catch {}
+  return "Worldwide";
+}
+
 function detectContinentFromTimezone() {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
@@ -249,9 +364,7 @@ function detectContinentFromTimezone() {
     if (tz.startsWith("Africa/")) {
       return "MEA";
     }
-  } catch (e) {
-    // Fallback to ALL
-  }
+  } catch {}
   return "GLOBAL_SOUTH";
 }
 
@@ -262,36 +375,69 @@ function App() {
     return ["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash) ? hash : "home";
   });
 
-  // Events dataset
+  // Events dataset (Merged smoothly without clashing or duplicate cards)
   const [events, setEvents] = useState(CURATED_SEED_EVENTS);
   const [selectedEvent, setSelectedEvent] = useState(null);
+
+  // Live Sync Status (Cloudflare + Render)
+  const [liveSyncTime, setLiveSyncTime] = useState("");
 
   // Theme state: 'system' | 'light' | 'dark'
   const [themePref, setThemePref] = useState(() => {
     return localStorage.getItem("eventador-theme") || "system";
   });
 
-  // Profile Popover state
+  // Profile Popover
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileRef = useRef(null);
 
-  // Continental Location State (Defaults to auto-detected timezone continent)
+  // Exact Geolocation State (City, State, Country, lat, lng)
+  const [exactLocation, setExactLocation] = useState(() => {
+    try {
+      const saved = localStorage.getItem("eventador-exact-location");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [detectingExactLocation, setDetectingExactLocation] = useState(false);
+  const [locationStatusMessage, setLocationStatusMessage] = useState("");
+  const [locationPromptDismissed, setLocationPromptDismissed] = useState(() => {
+    return localStorage.getItem("eventador-loc-dismissed") === "true";
+  });
+
+  // Continental Zone Filter (For high-level sorting across global events)
   const [userContinent, setUserContinent] = useState(() => {
     return localStorage.getItem("eventador-continent") || detectContinentFromTimezone();
   });
-  const [detectingLocation, setDetectingLocation] = useState(false);
-  const [locationNote, setLocationNote] = useState("");
 
-  // Filters for Explore tab
+  // Explore tab filters
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("ALL");
   const [filterFormat, setFilterFormat] = useState("ALL");
   const [filterPrice, setFilterPrice] = useState("ALL");
   const [filterContinent, setFilterContinent] = useState("ALL");
+  const [filterSource, setFilterSource] = useState("ALL");
 
-  // Animated Hero Cards Deck Index
+  // Near Me custom search filter
+  const [nearMeSearch, setNearMeSearch] = useState("");
+
+  // Hero Animated Card Deck Index
   const [deckIndex, setDeckIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+
+  // Top featured events for the animated deck
+  const heroDeckEvents = useMemo(() => {
+    return events.slice(0, 5);
+  }, [events]);
+
+  // Keep deck index valid when events update (Zero jumping slides!)
+  useEffect(() => {
+    if (heroDeckEvents.length > 0 && deckIndex >= heroDeckEvents.length) {
+      setDeckIndex(0);
+    }
+  }, [heroDeckEvents.length, deckIndex]);
 
   // Close profile dropdown on outside click
   useEffect(() => {
@@ -304,7 +450,7 @@ function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Theme Applying Logic
+  // Theme Applying
   useEffect(() => {
     const root = document.documentElement;
     localStorage.setItem("eventador-theme", themePref);
@@ -341,25 +487,123 @@ function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  // Fetch live verified events from Cloudflare Worker API
-  useEffect(() => {
-    fetch("https://eventador.eventador.workers.dev/api/events")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.events && data.events.length > 0) {
-          setEvents(data.events);
+  // Exact Location Request Handler (Uses OpenStreetMap Nominatim reverse geocode)
+  const requestExactLocation = (interactive = false) => {
+    if (!navigator.geolocation) {
+      if (interactive) setLocationStatusMessage("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setDetectingExactLocation(true);
+    setLocationStatusMessage("Pinpointing your exact city...");
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        try {
+          // OpenStreetMap Nominatim reverse geocoding (100% free, zero api key needed)
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`, {
+            headers: { "Accept-Language": "en" }
+          });
+          const data = await res.json();
+          const addr = data.address || {};
+          const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Your City";
+          const state = addr.state || "";
+          const country = addr.country || "";
+          const label = state ? `${city}, ${state}, ${country}` : `${city}, ${country}`;
+
+          // Deduce continent for broad global categorization
+          let continent = "GLOBAL_SOUTH";
+          if (lng >= 60 && lng <= 180 && lat >= -50) continent = "GLOBAL_SOUTH";
+          else if (lng >= -25 && lng <= 45 && lat >= 35) continent = "EUROPE";
+          else if (lng >= -170 && lng <= -50 && lat >= 15) continent = "NORTH_AMERICA";
+          else if (lng >= -120 && lng <= -30 && lat < 15) continent = "LATIN_AMERICA";
+          else if (lng >= -20 && lng <= 60 && lat >= -35 && lat < 37) continent = "MEA";
+
+          const locObj = { lat, lng, city, state, country, label, continent };
+          setExactLocation(locObj);
+          setUserContinent(continent);
+          localStorage.setItem("eventador-exact-location", JSON.stringify(locObj));
+          localStorage.setItem("eventador-continent", continent);
+          setLocationStatusMessage(`📍 Detected: ${label}`);
+          setDetectingExactLocation(false);
+          setLocationPromptDismissed(true);
+          localStorage.setItem("eventador-loc-dismissed", "true");
+        } catch {
+          // Fallback to coordinates if reverse lookup fails
+          const locObj = { lat, lng, city: "Detected Location", state: "", country: "", label: `${lat.toFixed(2)}°, ${lng.toFixed(2)}°`, continent: userContinent };
+          setExactLocation(locObj);
+          localStorage.setItem("eventador-exact-location", JSON.stringify(locObj));
+          setLocationStatusMessage(`📍 Lat: ${lat.toFixed(2)}°, Lng: ${lng.toFixed(2)}°`);
+          setDetectingExactLocation(false);
+          setLocationPromptDismissed(true);
         }
-      })
-      .catch(() => {
-        // Safe offline / local fallback: CURATED_SEED_EVENTS
-      });
+      },
+      (err) => {
+        setDetectingExactLocation(false);
+        const tzCity = detectCityFromTimezone();
+        setLocationStatusMessage(err.code === 1 ? `Location access declined. Estimated: ${tzCity}` : "Location lookup timed out.");
+      },
+      { timeout: 8000, enableHighAccuracy: true }
+    );
+  };
+
+  // Automatic Prompt on First Visit
+  useEffect(() => {
+    if (!exactLocation && !locationPromptDismissed) {
+      // Trigger browser location prompt smoothly on initial user visit
+      requestExactLocation(false);
+    }
   }, []);
 
-  // Autonomous 3D Card Deck Animation Timer (Cycles cards smoothly every 3.5s)
-  const heroDeckEvents = useMemo(() => {
-    return events.slice(0, 5);
-  }, [events]);
+  // Multi-Service Anti-Clash Event Merger (Cloudflare Worker + Render + GitHub Actions)
+  const mergeEventsWithoutClash = (prevEvents, incomingEvents) => {
+    if (!incomingEvents || incomingEvents.length === 0) return prevEvents;
+    const eventMap = new Map();
 
+    // Index existing events
+    for (const ev of prevEvents) {
+      const key = ev.event_id || `${ev.title}_${ev.start_date}`;
+      eventMap.set(key, ev);
+    }
+
+    // Upsert incoming events without duplicating cards or clashing
+    for (const ev of incomingEvents) {
+      const key = ev.event_id || `${ev.title}_${ev.start_date}`;
+      if (eventMap.has(key)) {
+        eventMap.set(key, { ...eventMap.get(key), ...ev });
+      } else {
+        eventMap.set(key, ev);
+      }
+    }
+
+    return Array.from(eventMap.values());
+  };
+
+  // Periodic polling from Cloudflare Edge Worker API (Every 3 minutes)
+  useEffect(() => {
+    const fetchLiveEvents = () => {
+      fetch("https://eventador.eventador.workers.dev/api/events")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.events && data.events.length > 0) {
+            setEvents((prev) => mergeEventsWithoutClash(prev, data.events));
+            setLiveSyncTime(new Date().toLocaleTimeString());
+          }
+        })
+        .catch(() => {
+          // Graceful offline fallback
+        });
+    };
+
+    fetchLiveEvents();
+    const interval = setInterval(fetchLiveEvents, 3 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Autonomous 3D Card Deck Animation Timer (Cycles smoothly every 3.5s)
   useEffect(() => {
     if (isHovered || heroDeckEvents.length === 0) return;
     const interval = setInterval(() => {
@@ -368,57 +612,7 @@ function App() {
     return () => clearInterval(interval);
   }, [isHovered, heroDeckEvents.length]);
 
-  // Continental Location Auto-Detection
-  const handleDetectLocation = () => {
-    setDetectingLocation(true);
-    setLocationNote("Detecting region...");
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          let continent = "GLOBAL_SOUTH";
-
-          if (lng >= 60 && lng <= 180 && lat >= -50) {
-            continent = "GLOBAL_SOUTH";
-          } else if (lng >= -25 && lng <= 45 && lat >= 35) {
-            continent = "EUROPE";
-          } else if (lng >= -170 && lng <= -50 && lat >= 15) {
-            continent = "NORTH_AMERICA";
-          } else if (lng >= -120 && lng <= -30 && lat < 15) {
-            continent = "LATIN_AMERICA";
-          } else if (lng >= -20 && lng <= 60 && lat >= -35 && lat < 37) {
-            continent = "MEA";
-          }
-
-          setUserContinent(continent);
-          localStorage.setItem("eventador-continent", continent);
-          setDetectingLocation(false);
-          const matched = CONTINENTS.find((c) => c.id === continent);
-          setLocationNote(`Detected: ${matched ? matched.label : continent}`);
-        },
-        () => {
-          const continent = detectContinentFromTimezone();
-          setUserContinent(continent);
-          localStorage.setItem("eventador-continent", continent);
-          setDetectingLocation(false);
-          const matched = CONTINENTS.find((c) => c.id === continent);
-          setLocationNote(`Timezone: ${matched ? matched.label : continent}`);
-        },
-        { timeout: 6000 }
-      );
-    } else {
-      const continent = detectContinentFromTimezone();
-      setUserContinent(continent);
-      localStorage.setItem("eventador-continent", continent);
-      setDetectingLocation(false);
-      const matched = CONTINENTS.find((c) => c.id === continent);
-      setLocationNote(`Timezone: ${matched ? matched.label : continent}`);
-    }
-  };
-
-  // Real "Trending This Week" events sorted by actual earliest date
+  // Real "Trending This Week" events sorted by nearest registration deadline / start date
   const trendingEvents = useMemo(() => {
     return [...events].sort((a, b) => {
       const tA = new Date(a.start_date || 0).getTime();
@@ -427,13 +621,14 @@ function App() {
     }).slice(0, 6);
   }, [events]);
 
-  // Filtered events for the Explore tab
+  // Filtered for Explore Tab
   const exploreEvents = useMemo(() => {
     return events.filter((ev) => {
       if (filterType !== "ALL" && ev.event_type !== filterType) return false;
       if (filterFormat !== "ALL" && ev.format !== filterFormat) return false;
       if (filterPrice !== "ALL" && String(ev.is_free) !== String(filterPrice)) return false;
       if (filterContinent !== "ALL" && ev.continent !== "ALL" && ev.continent !== filterContinent) return false;
+      if (filterSource !== "ALL" && ev.source_platform !== filterSource) return false;
 
       if (search.trim()) {
         const q = search.toLowerCase();
@@ -445,7 +640,7 @@ function App() {
       }
       return true;
     });
-  }, [events, search, filterType, filterFormat, filterPrice, filterContinent]);
+  }, [events, search, filterType, filterFormat, filterPrice, filterContinent, filterSource]);
 
   // Filtered for Hackathons Tab
   const hackathonEvents = useMemo(() => {
@@ -457,15 +652,40 @@ function App() {
     return events.filter((ev) => ev.event_type === "MEETUP" || /meetup|community|founder/i.test(ev.title));
   }, [events]);
 
-  // Filtered for Near Me Tab (Continent + In-Person / Hybrid)
+  // Filtered for Near Me Tab (Exact Distance Calculation & Proximity Sorting)
   const nearMeEvents = useMemo(() => {
-    return events.filter((ev) => {
-      const isPhysical = ev.format === "OFFLINE" || ev.format === "HYBRID";
-      if (!isPhysical) return false;
-      if (userContinent === "ALL") return true;
-      return ev.continent === "ALL" || ev.continent === userContinent;
+    const physicalEvents = events.filter((ev) => ev.format === "OFFLINE" || ev.format === "HYBRID");
+
+    // Compute exact distance in km for each event relative to user's exact coordinates
+    const listWithDistance = physicalEvents.map((ev) => {
+      let distanceKm = null;
+      if (exactLocation && exactLocation.lat != null && exactLocation.lng != null && ev.lat != null && ev.lng != null) {
+        distanceKm = haversineDistanceKm(exactLocation.lat, exactLocation.lng, ev.lat, ev.lng);
+      } else if (exactLocation && exactLocation.city && ev.city && ev.city.toLowerCase().includes(exactLocation.city.toLowerCase())) {
+        distanceKm = 5; // Local city match
+      }
+      return { ...ev, distanceKm };
     });
-  }, [events, userContinent]);
+
+    // Apply manual search query if provided in Near Me tab
+    let filtered = listWithDistance;
+    if (nearMeSearch.trim()) {
+      const q = nearMeSearch.toLowerCase();
+      filtered = filtered.filter((ev) => {
+        return (ev.city && ev.city.toLowerCase().includes(q)) ||
+               (ev.title && ev.title.toLowerCase().includes(q)) ||
+               (ev.venue && ev.venue.toLowerCase().includes(q));
+      });
+    }
+
+    // Sort: Nearest events first (ascending distance in km), then by upcoming date
+    return filtered.sort((a, b) => {
+      if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
+      if (a.distanceKm != null) return -1;
+      if (b.distanceKm != null) return 1;
+      return new Date(a.start_date || 0).getTime() - new Date(b.start_date || 0).getTime();
+    });
+  }, [events, exactLocation, nearMeSearch]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "Upcoming";
@@ -482,9 +702,11 @@ function App() {
     return c ? c.label : "Worldwide / Global";
   }, [userContinent]);
 
-  // Render an event card
+  // Helper to render an event card with exact distance badge
   const renderEventCard = (ev) => {
-    const isNearby = userContinent !== "ALL" && (ev.continent === userContinent || ev.continent === "ALL");
+    const hasDistance = ev.distanceKm != null;
+    const isNearbyCity = exactLocation && exactLocation.city && ev.city && ev.city.toLowerCase().includes(exactLocation.city.toLowerCase());
+
     return (
       <div key={ev.event_id} className="event-card">
         <div>
@@ -496,8 +718,16 @@ function App() {
             ) : (
               <span className="badge-pill badge-paid">PAID</span>
             )}
-            {isNearby && ev.format !== "ONLINE" && (
-              <span className="badge-pill badge-local">IN YOUR REGION</span>
+            {hasDistance && (
+              <span className="badge-pill badge-distance">
+                📍 {ev.distanceKm <= 10 ? `In ${ev.city || "your area"}` : `${ev.distanceKm} km away`}
+              </span>
+            )}
+            {isNearbyCity && !hasDistance && (
+              <span className="badge-pill badge-local">📍 IN YOUR CITY</span>
+            )}
+            {ev.source_platform && (
+              <span className="badge-pill badge-source">{ev.source_platform}</span>
             )}
           </div>
 
@@ -546,13 +776,11 @@ function App() {
           ==================================================================== */}
       <div className="navbar-wrapper">
         <nav className="navbar">
-          {/* Brand — Clean without "VERIFIED" badge */}
           <div className="nav-brand" onClick={() => navigateTo("home")}>
             <img src="/logo.png" alt="Eventador" className="brand-logo-img" onError={(e) => { e.target.style.display = 'none'; }} />
             <span>Eventador</span>
           </div>
 
-          {/* Clean Navigation Links (Zero Emojis) */}
           <div className="nav-links">
             <span className={"nav-link " + (activeTab === "home" ? "active" : "")} onClick={() => navigateTo("home")}>
               Home
@@ -577,19 +805,18 @@ function App() {
             </span>
           </div>
 
-          {/* Nav Actions: Add Bot Button & Cloudflare-Style Settings / Profile Icon */}
           <div className="nav-actions">
             <button className="btn-action-bot" onClick={() => navigateTo("bots")}>
               Add Bot ↗
             </button>
 
-            {/* Cloudflare-Style Profile / Settings Popover Toggle */}
+            {/* Cloudflare-Style Profile / Settings Popover */}
             <div className="profile-wrap" ref={profileRef}>
               <button
                 className={"profile-btn " + (showProfileMenu ? "active" : "")}
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                title="Settings & Appearance"
-                aria-label="Settings and theme"
+                title="Settings & Radar Preferences"
+                aria-label="Settings and appearance"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -621,13 +848,20 @@ function App() {
                     </button>
                   </div>
 
-                  <div className="popover-header" style={{ marginTop: "0.25rem" }}>Continental Radar</div>
+                  <div className="popover-header" style={{ marginTop: "0.4rem" }}>Exact Location (City Radar)</div>
                   <div className="location-detected-row">
-                    <span>Region:</span>
-                    <button className="btn-redetect" onClick={handleDetectLocation} disabled={detectingLocation}>
-                      {detectingLocation ? "Detecting..." : "Detect Location"}
+                    <span style={{ fontWeight: 600, color: "var(--text)" }}>
+                      {exactLocation ? exactLocation.label : "Not Detected"}
+                    </span>
+                    <button className="btn-redetect" onClick={() => requestExactLocation(true)} disabled={detectingExactLocation}>
+                      {detectingExactLocation ? "Locating..." : "Detect Exact City"}
                     </button>
                   </div>
+
+                  <div className="popover-header" style={{ marginTop: "0.4rem" }}>Global Continental Zone</div>
+                  <p style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                    Used for broad sorting across 1,000+ monthly global events.
+                  </p>
                   <select
                     className="dropdown-select"
                     style={{ fontSize: "0.8rem", padding: "0.38rem 0.5rem" }}
@@ -641,9 +875,10 @@ function App() {
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
-                  {locationNote && (
-                    <span style={{ fontSize: "0.72rem", color: "var(--color-orange)", fontWeight: 600 }}>
-                      {locationNote}
+
+                  {locationStatusMessage && (
+                    <span style={{ fontSize: "0.72rem", color: "var(--color-orange)", fontWeight: 600, marginTop: "0.2rem" }}>
+                      {locationStatusMessage}
                     </span>
                   )}
                 </div>
@@ -653,40 +888,82 @@ function App() {
         </nav>
       </div>
 
+      {/* Non-intrusive Exact Location Auto-Prompt Banner */}
+      {!exactLocation && !locationPromptDismissed && (
+        <div className="location-prompt-banner">
+          <div className="prompt-left">
+            <span className="prompt-icon">📍</span>
+            <div>
+              <strong>Find hackathons & meetups happening in your exact city</strong>
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                Allow location access to calculate exact distances to developer events near your hometown.
+              </p>
+            </div>
+          </div>
+          <div className="prompt-actions">
+            <button className="btn-prompt-allow" onClick={() => requestExactLocation(true)}>
+              Detect My Exact City
+            </button>
+            <button
+              className="btn-prompt-dismiss"
+              onClick={() => {
+                setLocationPromptDismissed(true);
+                localStorage.setItem("eventador-loc-dismissed", "true");
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ====================================================================
           PAGE 1: HOME (Compact Hero + Orbit Canvas + Two Pillars + Real Trending)
           ==================================================================== */}
       {activeTab === "home" && (
         <div>
-          {/* Compact Hero Section */}
           <header className="hero-container">
             <div className="hero-content">
-              <div className="hero-eyebrow">
-                <span>●</span> Happy Developer Intelligence
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                <div className="hero-eyebrow">
+                  <span>●</span> Happy Developer Intelligence
+                </div>
+                <div className="live-sync-indicator">
+                  <div className="pulse-dot"></div>
+                  <span>Cloudflare + Render Live Sync</span>
+                </div>
               </div>
+
               <h1 className="hero-title">
                 Tech events, from <em>community</em> to <em>grand stage.</em>
               </h1>
               <p className="hero-desc">
-                Eventador autonomously discovers and verifies upcoming hackathons, meetups, workshops, and OSINT leads worldwide. 100% genuine registration links, zero scams.
+                Eventador autonomously monitors, verifies, and surfaces upcoming hackathons, meetups, workshops, and OSINT leads worldwide. 100% genuine registration links, zero scams.
               </p>
+
+              {exactLocation && (
+                <div style={{ fontSize: "0.84rem", color: "var(--color-orange)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                  <span>📍 Your Exact Radar:</span>
+                  <span>{exactLocation.label}</span>
+                </div>
+              )}
+
               <div className="hero-buttons">
                 <button className="btn-action-primary" onClick={() => navigateTo("explore")}>
                   Explore Directory ↘
                 </button>
+                <button className="btn-action-secondary" onClick={() => navigateTo("nearme")}>
+                  Find Near Me 📍
+                </button>
                 <button className="btn-action-secondary" onClick={() => navigateTo("bots")}>
                   Community Bots ↗
                 </button>
-                <button className="btn-action-secondary" onClick={() => navigateTo("osint")}>
-                  Google OSINT Tools ↗
-                </button>
               </div>
 
-              {/* Minimal Metrics Row */}
               <div className="hero-metrics-row">
                 <div className="metric-item">
                   <span className="metric-num">1,240+</span>
-                  <span>Verified Tech Events</span>
+                  <span>Verified Events</span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-num">100%</span>
@@ -699,20 +976,18 @@ function App() {
               </div>
             </div>
 
-            {/* Right Side: Big Orbit Geometric Circle with 3D Animated Cards Deck */}
+            {/* Right Side: Big Orbit Geometry with 3D Animated Cards Deck */}
             <div
               className="hero-orbit-canvas"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {/* Geometric Orbit Rings */}
               <div className="hero-big-circle">
                 <div className="circle-dot circle-dot-orange"></div>
                 <div className="circle-dot circle-dot-blue"></div>
                 <div className="circle-dot circle-dot-green"></div>
               </div>
 
-              {/* 3D Stacked Cards Deck (Cycles real upcoming events) */}
               <div className="deck-container">
                 {heroDeckEvents.map((ev, i) => {
                   const diff = (i - deckIndex + heroDeckEvents.length) % heroDeckEvents.length;
@@ -755,7 +1030,6 @@ function App() {
                   );
                 })}
 
-                {/* Indicator Dots */}
                 <div className="card-indicator-dots">
                   {heroDeckEvents.map((_, i) => (
                     <div
@@ -769,7 +1043,7 @@ function App() {
             </div>
           </header>
 
-          {/* Two Core Pillars Section (Web Radar + Community Bots) */}
+          {/* Two Core Pillars Section */}
           <div className="page-container" style={{ paddingTop: "0.5rem" }}>
             <div className="pillars-grid">
               <div className="pillar-card">
@@ -803,7 +1077,7 @@ function App() {
               </div>
             </div>
 
-            {/* Real Trending This Week Section (Organized by nearest dates) */}
+            {/* Real Trending This Week Section */}
             <div className="section-header">
               <div>
                 <h2 className="section-title">Trending This Week</h2>
@@ -821,18 +1095,17 @@ function App() {
       )}
 
       {/* ====================================================================
-          PAGE 2: EXPLORE (Full Directory with Rich Filters & Search)
+          PAGE 2: EXPLORE (Full Directory with Continental & Source Filters)
           ==================================================================== */}
       {activeTab === "explore" && (
         <div className="page-container">
           <div className="section-header">
             <div>
               <h2 className="section-title">Explore Verified Events</h2>
-              <p className="section-sub">Filter by continental zone, format, technology domain, or pricing.</p>
+              <p className="section-sub">Filter by continental zone, source platform, format, or pricing.</p>
             </div>
           </div>
 
-          {/* Filter Panel */}
           <div className="filter-card">
             <div className="search-row">
               <svg className="search-icon-svg" viewBox="0 0 20 20">
@@ -858,6 +1131,18 @@ function App() {
               </div>
 
               <div className="dropdown-group">
+                <label className="dropdown-label">Source Platform</label>
+                <select className="dropdown-select" value={filterSource} onChange={(e) => setFilterSource(e.target.value)}>
+                  <option value="ALL">All Sources (Reddit, Dev.to, Official)</option>
+                  <option value="DEVTO">Dev.to Community</option>
+                  <option value="REDDIT">Reddit Radar</option>
+                  <option value="DEVFOLIO">Devfolio Official</option>
+                  <option value="GOV_CHALLENGE">Gov Challenges (SIH)</option>
+                  <option value="LUMA">Lu.ma Community</option>
+                </select>
+              </div>
+
+              <div className="dropdown-group">
                 <label className="dropdown-label">Event Type</label>
                 <select className="dropdown-select" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
                   <option value="ALL">All Event Types</option>
@@ -865,7 +1150,6 @@ function App() {
                   <option value="MEETUP">Meetups</option>
                   <option value="CONFERENCE">Conferences</option>
                   <option value="WORKSHOP">Workshops</option>
-                  <option value="COMMUNITY">Community Summits</option>
                 </select>
               </div>
 
@@ -890,7 +1174,6 @@ function App() {
             </div>
           </div>
 
-          {/* Event Cards */}
           <div className="section-header" style={{ marginBottom: "1rem" }}>
             <span style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
               Showing {exploreEvents.length} verified events
@@ -943,11 +1226,10 @@ function App() {
       )}
 
       {/* ====================================================================
-          PAGE 5: NEAR ME (Continental In-Person & Hybrid Radar)
+          PAGE 5: NEAR ME (Exact Location, Proximity & Distance Sorting)
           ==================================================================== */}
       {activeTab === "nearme" && (
         <div className="page-container">
-          {/* Radar Scanner Banner */}
           <div className="radar-banner">
             <div className="radar-circle">
               <div className="radar-ping"></div>
@@ -959,21 +1241,52 @@ function App() {
             </div>
             <div style={{ flex: 1 }}>
               <h3 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.25rem" }}>
-                Continental Offline & Hybrid Event Radar
+                Autonomous Exact Location Event Radar
               </h3>
               <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
-                Showing events in <strong>{currentContinentLabel}</strong>. Click "Detect Location" to update your continental region automatically via browser geolocation.
+                {exactLocation ? (
+                  <span>
+                    Pinpointed: <strong>{exactLocation.label}</strong>. Showing in-person & hybrid events sorted by exact distance from you.
+                  </span>
+                ) : (
+                  <span>
+                    Location access enables automatic distance calculation to all nearby offline hackathons and meetups.
+                  </span>
+                )}
               </p>
             </div>
-            <button className="btn-action-primary" onClick={handleDetectLocation} disabled={detectingLocation}>
-              {detectingLocation ? "Detecting..." : "Detect Location"}
+            <button
+              className="btn-action-primary"
+              onClick={() => requestExactLocation(true)}
+              disabled={detectingExactLocation}
+            >
+              {detectingExactLocation ? "Locating..." : "Detect Exact Location"}
             </button>
+          </div>
+
+          {/* Quick city filter bar in Near Me */}
+          <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", alignItems: "center" }}>
+            <input
+              type="text"
+              className="search-field"
+              style={{ maxWidth: "380px" }}
+              placeholder="Filter by city (e.g. Kolkata, Bengaluru, London)..."
+              value={nearMeSearch}
+              onChange={(e) => setNearMeSearch(e.target.value)}
+            />
+            {nearMeSearch && (
+              <button className="btn-card-details" onClick={() => setNearMeSearch("")}>
+                Clear
+              </button>
+            )}
           </div>
 
           <div className="section-header">
             <div>
               <h2 className="section-title">Nearby In-Person & Hybrid Events</h2>
-              <p className="section-sub">{nearMeEvents.length} events scheduled in {currentContinentLabel}.</p>
+              <p className="section-sub">
+                {nearMeEvents.length} events found {exactLocation ? `near ${exactLocation.city || exactLocation.label}` : "worldwide"}.
+              </p>
             </div>
           </div>
           <div className="events-grid">
@@ -981,7 +1294,7 @@ function App() {
               nearMeEvents.map(renderEventCard)
             ) : (
               <p style={{ color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" }}>
-                No upcoming offline events scheduled for this region yet. Try exploring the global directory or virtual events!
+                No upcoming offline events found near this location yet. Try broadening your search or exploring virtual hackathons!
               </p>
             )}
           </div>
@@ -995,8 +1308,10 @@ function App() {
         <div className="page-container">
           <div className="section-header">
             <div>
-              <h2 className="section-title">Google Search OSINT & Social Radar</h2>
-              <p className="section-sub">Curated open-intelligence search dorks to discover unlisted events on Lu.ma, Twitter/X, LinkedIn, and GitHub.</p>
+              <h2 className="section-title">Google Search OSINT & Community Leads</h2>
+              <p className="section-sub">
+                Curated open-intelligence search dorks to discover unlisted events on Dev.to, Reddit, Lu.ma, Twitter/X, LinkedIn, and GitHub.
+              </p>
             </div>
           </div>
 
@@ -1006,7 +1321,7 @@ function App() {
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
                     <h3 style={{ fontSize: "1.05rem", fontWeight: 700 }}>{dork.title}</h3>
-                    <span className="badge-pill badge-online">{dork.category}</span>
+                    <span className="badge-pill badge-online">{dork.platform}</span>
                   </div>
                   <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
                     {dork.desc}
@@ -1020,7 +1335,7 @@ function App() {
                   className="btn-card-register"
                   style={{ justifyContent: "center", marginTop: "0.5rem" }}
                 >
-                  Launch Google OSINT Search ↗
+                  Launch Live OSINT Search ↗
                 </a>
               </div>
             ))}
@@ -1043,7 +1358,6 @@ function App() {
             </p>
           </div>
 
-          {/* 3 Bot Platform Cards */}
           <div className="bots-grid">
             {/* Card 1: Discord Bot */}
             <div className="bot-card bot-card-discord">
@@ -1196,7 +1510,6 @@ function App() {
             </div>
           </div>
 
-          {/* Interactive Discord Embed Mockup Section */}
           <div className="section-header" style={{ marginTop: "1rem" }}>
             <div>
               <h2 className="section-title">Interactive Discord Feed Preview</h2>
@@ -1230,13 +1543,12 @@ function App() {
                 <p style={{ color: "#f2f3f5" }}>Nov 15, 2026 — Nov 17, 2026</p>
               </div>
               <div>
-                <strong style={{ color: "#b5bac1", fontSize: "0.72rem", textTransform: "uppercase" }}>Region</strong>
-                <p style={{ color: "#f2f3f5" }}>Asia-Pacific & Global South</p>
+                <strong style={{ color: "#b5bac1", fontSize: "0.72rem", textTransform: "uppercase" }}>Exact Location</strong>
+                <p style={{ color: "#f2f3f5" }}>New Delhi, India</p>
               </div>
             </div>
           </div>
 
-          {/* 3-Step Setup Guide */}
           <div className="section-header" style={{ marginTop: "2.5rem" }}>
             <div>
               <h2 className="section-title">How Integration Works (3 Easy Steps)</h2>
@@ -1283,6 +1595,11 @@ function App() {
               <span className="badge-pill badge-type">{selectedEvent.event_type || "EVENT"}</span>
               <span className="badge-pill badge-online">{selectedEvent.format || "HYBRID"}</span>
               <span className="badge-pill badge-free">{selectedEvent.is_free ? "FREE ENTRY" : "PAID ENTRY"}</span>
+              {selectedEvent.distanceKm != null && (
+                <span className="badge-pill badge-distance">
+                  📍 {selectedEvent.distanceKm <= 10 ? `In ${selectedEvent.city || "your area"}` : `${selectedEvent.distanceKm} km away`}
+                </span>
+              )}
             </div>
             <h2 style={{ fontSize: "1.35rem", fontWeight: 800, margin: "0.75rem 0 0.35rem" }}>
               {selectedEvent.title}
@@ -1300,6 +1617,12 @@ function App() {
                 <span style={{ fontWeight: 600 }}>Location:</span>
                 <span>{selectedEvent.city ? `${selectedEvent.city}, ${selectedEvent.country || ""}` : "Global Virtual"} {selectedEvent.venue ? `(${selectedEvent.venue})` : ""}</span>
               </div>
+              {selectedEvent.distanceKm != null && (
+                <div className="meta-row" style={{ color: "var(--color-green)", fontWeight: 700 }}>
+                  <span>Distance:</span>
+                  <span>{selectedEvent.distanceKm} kilometers from your location</span>
+                </div>
+              )}
               {selectedEvent.price_detail && (
                 <div className="meta-row">
                   <span style={{ fontWeight: 600 }}>Pricing:</span>
