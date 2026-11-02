@@ -18,3 +18,4 @@ const result = ts.transpileModule(source, {
 
 fs.writeFileSync(outPath, result.outputText, 'utf8');
 console.log(`Frontend compiled successfully to public/app.js (${result.outputText.length} bytes)`);
+

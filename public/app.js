@@ -1,5 +1,14 @@
-const { useState, useEffect, useMemo } = React;
-// Curated Seed Events with high-impact verified items
+const { useState, useEffect, useMemo, useRef } = React;
+// Continental Regions Definition
+const CONTINENTS = [
+    { id: "ALL", label: "Worldwide / Global" },
+    { id: "GLOBAL_SOUTH", label: "Asia-Pacific & Global South" },
+    { id: "NORTH_AMERICA", label: "North America" },
+    { id: "EUROPE", label: "Europe" },
+    { id: "LATIN_AMERICA", label: "Latin America" },
+    { id: "MEA", label: "Middle East & Africa" }
+];
+// Curated Genuine Seed Events (High-urgency, sorted, global & continental)
 const CURATED_SEED_EVENTS = [
     {
         event_id: "seed-1",
@@ -9,6 +18,8 @@ const CURATED_SEED_EVENTS = [
         event_type: "HACKATHON",
         is_free: 1,
         city: "New Delhi",
+        country: "India",
+        continent: "GLOBAL_SOUTH",
         venue: "National Finals Centers & Regional Nodes",
         start_date: "2026-11-15T09:00:00Z",
         end_date: "2026-11-17T18:00:00Z",
@@ -24,6 +35,8 @@ const CURATED_SEED_EVENTS = [
         event_type: "HACKATHON",
         is_free: 1,
         city: "Bengaluru",
+        country: "India",
+        continent: "GLOBAL_SOUTH",
         venue: "KTPO Convention Centre, Whitefield",
         start_date: "2026-12-04T10:00:00Z",
         end_date: "2026-12-06T18:00:00Z",
@@ -34,11 +47,13 @@ const CURATED_SEED_EVENTS = [
     {
         event_id: "seed-3",
         title: "Google Developer Groups DevFest 2026",
-        organizer_name: "GDG Bengaluru",
+        organizer_name: "GDG Global Community",
         format: "OFFLINE",
         event_type: "CONFERENCE",
         is_free: 1,
         city: "Bengaluru",
+        country: "India",
+        continent: "GLOBAL_SOUTH",
         venue: "NIMHANS Convention Centre",
         start_date: "2026-11-20T09:00:00Z",
         end_date: "2026-11-21T18:00:00Z",
@@ -48,12 +63,31 @@ const CURATED_SEED_EVENTS = [
     },
     {
         event_id: "seed-4",
+        title: "TreeHacks 2026",
+        organizer_name: "Stanford University",
+        format: "HYBRID",
+        event_type: "HACKATHON",
+        is_free: 1,
+        city: "Stanford",
+        country: "United States",
+        continent: "NORTH_AMERICA",
+        venue: "Stanford University Campus / Online",
+        start_date: "2026-11-22T10:00:00Z",
+        end_date: "2026-11-24T18:00:00Z",
+        event_url: "https://treehacks.com",
+        registration_url: "https://treehacks.com",
+        prize: "$150,000+ Hardware & Cloud Tracks"
+    },
+    {
+        event_id: "seed-5",
         title: "AWS Community Day India 2026",
         organizer_name: "AWS User Group India",
         format: "HYBRID",
         event_type: "CONFERENCE",
         is_free: 1,
         city: "Hyderabad",
+        country: "India",
+        continent: "GLOBAL_SOUTH",
         venue: "HICC Novotel, Hitec City",
         start_date: "2026-11-28T09:00:00Z",
         end_date: "2026-11-28T18:00:00Z",
@@ -62,13 +96,32 @@ const CURATED_SEED_EVENTS = [
         prize: "AWS Cloud Vouchers & Certification"
     },
     {
-        event_id: "seed-5",
+        event_id: "seed-6",
+        title: "ETHGlobal London 2026",
+        organizer_name: "ETHGlobal",
+        format: "HYBRID",
+        event_type: "HACKATHON",
+        is_free: 1,
+        city: "London",
+        country: "United Kingdom",
+        continent: "EUROPE",
+        venue: "ExCeL London & Virtual",
+        start_date: "2026-12-01T10:00:00Z",
+        end_date: "2026-12-03T18:00:00Z",
+        event_url: "https://ethglobal.com",
+        registration_url: "https://ethglobal.com",
+        prize: "$125,000+ Prize Pool"
+    },
+    {
+        event_id: "seed-7",
         title: "Microsoft Reactor AI & Copilot Workshop",
         organizer_name: "Microsoft Reactor",
         format: "HYBRID",
         event_type: "WORKSHOP",
         is_free: 1,
         city: "Bengaluru",
+        country: "India",
+        continent: "GLOBAL_SOUTH",
         venue: "Microsoft Reactor, Lavelle Road",
         start_date: "2026-12-05T10:00:00Z",
         end_date: "2026-12-05T16:00:00Z",
@@ -77,14 +130,33 @@ const CURATED_SEED_EVENTS = [
         prize: "Hands-on Azure Labs & Credits"
     },
     {
-        event_id: "seed-6",
-        title: "Luma Mumbai Tech Founders Meetup",
+        event_id: "seed-8",
+        title: "Hacktoberfest Global Summit",
+        organizer_name: "DigitalOcean & Cloudflare",
+        format: "ONLINE",
+        event_type: "COMMUNITY",
+        is_free: 1,
+        city: "Virtual",
+        country: "Worldwide",
+        continent: "ALL",
+        venue: "Discord / Global Virtual",
+        start_date: "2026-11-10T00:00:00Z",
+        end_date: "2026-11-30T23:59:59Z",
+        event_url: "https://hacktoberfest.com",
+        registration_url: "https://hacktoberfest.com",
+        prize: "Official Badges & Open Source Swag"
+    },
+    {
+        event_id: "seed-9",
+        title: "Luma Founders & Tech Meetup",
         organizer_name: "Mumbai Founders Club",
         format: "OFFLINE",
         event_type: "MEETUP",
         is_free: 0,
         price_detail: "₹499 (Includes food & beverage)",
         city: "Mumbai",
+        country: "India",
+        continent: "GLOBAL_SOUTH",
         venue: "WeWork BKC, Bandra Kurla Complex",
         start_date: "2026-12-12T17:00:00Z",
         end_date: "2026-12-12T20:00:00Z",
@@ -93,91 +165,95 @@ const CURATED_SEED_EVENTS = [
         prize: "Pitching Session with Angel Investors"
     },
     {
-        event_id: "seed-7",
-        title: "Delhi NCR Rust & Systems Meetup",
-        organizer_name: "Rust Delhi Community",
-        format: "OFFLINE",
-        event_type: "MEETUP",
+        event_id: "seed-10",
+        title: "FOSDEM Open Source Summit",
+        organizer_name: "FOSDEM Community",
+        format: "HYBRID",
+        event_type: "CONFERENCE",
         is_free: 1,
-        city: "Delhi",
-        venue: "Innov8 Coworking, Connaught Place",
-        start_date: "2026-11-22T15:00:00Z",
-        end_date: "2026-11-22T18:00:00Z",
-        event_url: "https://meetup.com",
-        registration_url: "https://meetup.com",
-        prize: "Open-source pairing session & stickers"
-    },
-    {
-        event_id: "seed-8",
-        title: "Hacktoberfest Global Celebration",
-        organizer_name: "DigitalOcean & Cloudflare",
-        format: "ONLINE",
-        event_type: "COMMUNITY",
-        is_free: 1,
-        city: null,
-        venue: "Discord / Global Virtual",
-        start_date: "2026-10-01T00:00:00Z",
-        end_date: "2026-10-31T23:59:59Z",
-        event_url: "https://hacktoberfest.com",
-        registration_url: "https://hacktoberfest.com",
-        prize: "Official Badges & Tree Plantings"
+        city: "Brussels",
+        country: "Belgium",
+        continent: "EUROPE",
+        venue: "ULB Solbosch Campus",
+        start_date: "2027-02-06T09:00:00Z",
+        end_date: "2027-02-07T18:00:00Z",
+        event_url: "https://fosdem.org",
+        registration_url: "https://fosdem.org",
+        prize: "Free Community Admission"
     }
 ];
-// Curated Google OSINT Dork Tools
+// Curated Google Search OSINT Tools
 const OSINT_DORKS = [
     {
-        title: "Lu.ma City Tech Radar",
+        title: "Lu.ma Global Tech Radar",
         category: "Meetups & Demo Days",
-        query: 'site:lu.ma ("Bengaluru" OR "Delhi" OR "Mumbai" OR "Hyderabad" OR "Pune") ("meetup" OR "hackathon")',
-        url: 'https://www.google.com/search?q=site%3Alu.ma+(%22Bengaluru%22+OR+%22Delhi%22+OR+%22Mumbai%22+OR+%22Hyderabad%22+OR+%22Pune%22)+(%22meetup%22+OR+%22hackathon%22)',
-        desc: "Finds unlisted grassroots tech meetups, founder coffee chats, and demo days on Lu.ma."
+        query: 'site:lu.ma ("developer" OR "hackathon" OR "meetup" OR "AI demo")',
+        url: 'https://www.google.com/search?q=site%3Alu.ma+(%22developer%22+OR+%22hackathon%22+OR+%22meetup%22+OR+%22AI+demo%22)',
+        desc: "Discovers unlisted grassroots tech meetups, founder coffee chats, and demo days hosted on Lu.ma."
     },
     {
         title: "LinkedIn Tech Events Dork",
         category: "Conferences & Summits",
-        query: 'site:linkedin.com/events ("developer meetup" OR "hackathon" OR "tech summit") ("India" OR "Bengaluru")',
-        url: 'https://www.google.com/search?q=site%3Alinkedin.com%2Fevents+(%22developer+meetup%22+OR+%22hackathon%22+OR+%22tech+summit%22)+(%22India%22+OR+%22Bengaluru%22)',
+        query: 'site:linkedin.com/events ("developer meetup" OR "hackathon" OR "tech summit" OR "AI workshop")',
+        url: 'https://www.google.com/search?q=site%3Alinkedin.com%2Fevents+(%22developer+meetup%22+OR+%22hackathon%22+OR+%22tech+summit%22+OR+%22AI+workshop%22)',
         desc: "Finds enterprise, VC, and corporate developer summits announced on LinkedIn Events."
     },
     {
         title: "Twitter / X Flash Hackathons",
         category: "Flash Hackathons",
-        query: '(site:twitter.com OR site:x.com) ("hackathon" OR "tech meetup") ("register" OR "rsvp") "India"',
-        url: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22tech+meetup%22)+(%22register%22+OR+%22rsvp%22)+%22India%22',
+        query: '(site:twitter.com OR site:x.com) ("hackathon" OR "bounty" OR "coding sprint") ("register" OR "apply")',
+        url: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22bounty%22+OR+%22coding+sprint%22)+(%22register%22+OR+%22apply%22)',
         desc: "Discovers sudden registrations, bursaries, and flash hackathons tweeted by tech communities."
     },
     {
         title: "GitHub Open Source Event Repos",
         category: "Student Hackathons",
-        query: 'site:github.com in:readme ("hackathon" OR "tech-events") ("India" OR "2026")',
-        url: 'https://www.google.com/search?q=site%3Agithub.com+in%3Areadme+(%22hackathon%22+OR+%22tech-events%22)+(%22India%22+OR+%222026%22)',
-        desc: "Discovers open-source college hackathons and community calendars maintained in GitHub readmes."
+        query: 'site:github.com in:readme ("upcoming hackathon" OR "tech-events" OR "dev-calendar")',
+        url: 'https://www.google.com/search?q=site%3Agithub.com+in%3Areadme+(%22upcoming+hackathon%22+OR+%22tech-events%22+OR+%22dev-calendar%22)',
+        desc: "Finds open-source student hackathons and community calendars maintained directly in GitHub readmes."
     },
     {
-        title: "Reddit developersIndia Radar",
+        title: "Reddit Global Dev Communities",
         category: "Community Leads",
-        query: 'site:reddit.com/r/developersIndia ("meetup" OR "hackathon" OR "flair:Event")',
-        url: 'https://www.reddit.com/r/developersIndia/search?q=flair%3AEvent+OR+meetup+OR+hackathon&restrict_sr=1&sort=new',
-        desc: "Live discussions, team formation threads, and local city meetup invitations."
+        query: 'site:reddit.com (r/hackathons OR r/cscareerquestions OR r/developersIndia) ("hackathon" OR "meetup")',
+        url: 'https://www.google.com/search?q=site%3Areddit.com+(r%2Fhackathons+OR+r%2Fcscareerquestions+OR+r%2FdevelopersIndia)+(%22hackathon%22+OR+%22meetup%22)',
+        desc: "Live discussions, team formation threads, and local tech community meetup invitations."
     }
 ];
-// Major Indian Tech Cities with coordinates
-const CITY_COORDINATES = [
-    { name: "Bengaluru", lat: 12.9716, lng: 77.5946 },
-    { name: "Delhi", lat: 28.6139, lng: 77.2090 },
-    { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
-    { name: "Hyderabad", lat: 17.3850, lng: 78.4867 },
-    { name: "Pune", lat: 18.5204, lng: 73.8567 },
-    { name: "Chennai", lat: 13.0827, lng: 80.2707 },
-    { name: "Kolkata", lat: 22.5726, lng: 88.3639 },
-    { name: "Jaipur", lat: 26.9124, lng: 75.7873 },
-    { name: "Ahmedabad", lat: 23.0225, lng: 72.5714 }
-];
+// Helper to deduce continent from timezone
+function detectContinentFromTimezone() {
+    try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        if (tz.startsWith("Asia/") || tz.startsWith("Australia/") || tz.startsWith("Pacific/") || tz.startsWith("Indian/")) {
+            return "GLOBAL_SOUTH";
+        }
+        if (tz.startsWith("Europe/") || tz.startsWith("Atlantic/")) {
+            return "EUROPE";
+        }
+        if (tz.startsWith("America/Sao_Paulo") ||
+            tz.startsWith("America/Buenos_Aires") ||
+            tz.startsWith("America/Bogota") ||
+            tz.startsWith("America/Lima") ||
+            tz.startsWith("America/Santiago")) {
+            return "LATIN_AMERICA";
+        }
+        if (tz.startsWith("America/")) {
+            return "NORTH_AMERICA";
+        }
+        if (tz.startsWith("Africa/")) {
+            return "MEA";
+        }
+    }
+    catch (e) {
+        // Fallback to ALL
+    }
+    return "GLOBAL_SOUTH";
+}
 function App() {
-    // Navigation tab state: 'home' | 'explore' | 'hackathons' | 'meetups' | 'nearme' | 'osint'
+    // Navigation tabs: 'home' | 'explore' | 'hackathons' | 'meetups' | 'nearme' | 'osint' | 'bots'
     const [activeTab, setActiveTab] = useState(() => {
         const hash = window.location.hash.replace("#", "");
-        return ["home", "explore", "hackathons", "meetups", "nearme", "osint"].includes(hash) ? hash : "home";
+        return ["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash) ? hash : "home";
     });
     // Events dataset
     const [events, setEvents] = useState(CURATED_SEED_EVENTS);
@@ -186,26 +262,35 @@ function App() {
     const [themePref, setThemePref] = useState(() => {
         return localStorage.getItem("eventador-theme") || "system";
     });
-    // User Location State
-    const [userCity, setUserCity] = useState(() => {
-        return localStorage.getItem("eventador-city") || "ALL";
+    // Profile Popover state
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const profileRef = useRef(null);
+    // Continental Location State (Defaults to auto-detected timezone continent)
+    const [userContinent, setUserContinent] = useState(() => {
+        return localStorage.getItem("eventador-continent") || detectContinentFromTimezone();
     });
     const [detectingLocation, setDetectingLocation] = useState(false);
     const [locationNote, setLocationNote] = useState("");
-    // Filter states for Explore tab
+    // Filters for Explore tab
     const [search, setSearch] = useState("");
     const [filterType, setFilterType] = useState("ALL");
     const [filterFormat, setFilterFormat] = useState("ALL");
     const [filterPrice, setFilterPrice] = useState("ALL");
-    const [filterCity, setFilterCity] = useState("ALL");
+    const [filterContinent, setFilterContinent] = useState("ALL");
     // Animated Hero Cards Deck Index
     const [deckIndex, setDeckIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
-    // Top featured events for the animated deck
-    const heroDeckEvents = useMemo(() => {
-        return events.slice(0, 5);
-    }, [events]);
-    // Handle Theme Applying
+    // Close profile dropdown on outside click
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setShowProfileMenu(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+    // Theme Applying Logic
     useEffect(() => {
         const root = document.documentElement;
         localStorage.setItem("eventador-theme", themePref);
@@ -226,12 +311,13 @@ function App() {
     const navigateTo = (tab) => {
         setActiveTab(tab);
         window.location.hash = tab;
+        setShowProfileMenu(false);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.replace("#", "");
-            if (["home", "explore", "hackathons", "meetups", "nearme", "osint"].includes(hash)) {
+            if (["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash)) {
                 setActiveTab(hash);
             }
         };
@@ -251,7 +337,10 @@ function App() {
             // Safe offline / local fallback: CURATED_SEED_EVENTS
         });
     }, []);
-    // Autonomous 3D Card Deck Animation Timer (Cycles every 3.5s)
+    // Autonomous 3D Card Deck Animation Timer (Cycles cards smoothly every 3.5s)
+    const heroDeckEvents = useMemo(() => {
+        return events.slice(0, 5);
+    }, [events]);
     useEffect(() => {
         if (isHovered || heroDeckEvents.length === 0)
             return;
@@ -260,40 +349,61 @@ function App() {
         }, 3500);
         return () => clearInterval(interval);
     }, [isHovered, heroDeckEvents.length]);
-    // Geolocation detection handler
-    const detectUserLocation = () => {
-        if (!navigator.geolocation) {
-            setLocationNote("Geolocation is not supported by your browser.");
-            return;
-        }
+    // Continental Location Auto-Detection
+    const handleDetectLocation = () => {
         setDetectingLocation(true);
-        setLocationNote("Pinpointing nearest tech hub...");
-        navigator.geolocation.getCurrentPosition((pos) => {
-            const userLat = pos.coords.latitude;
-            const userLng = pos.coords.longitude;
-            let closest = CITY_COORDINATES[0];
-            let minDist = Infinity;
-            for (const city of CITY_COORDINATES) {
-                const d = Math.hypot(city.lat - userLat, city.lng - userLng);
-                if (d < minDist) {
-                    minDist = d;
-                    closest = city;
+        setLocationNote("Detecting region...");
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                let continent = "GLOBAL_SOUTH";
+                if (lng >= 60 && lng <= 180 && lat >= -50) {
+                    continent = "GLOBAL_SOUTH";
                 }
-            }
-            setUserCity(closest.name);
-            localStorage.setItem("eventador-city", closest.name);
+                else if (lng >= -25 && lng <= 45 && lat >= 35) {
+                    continent = "EUROPE";
+                }
+                else if (lng >= -170 && lng <= -50 && lat >= 15) {
+                    continent = "NORTH_AMERICA";
+                }
+                else if (lng >= -120 && lng <= -30 && lat < 15) {
+                    continent = "LATIN_AMERICA";
+                }
+                else if (lng >= -20 && lng <= 60 && lat >= -35 && lat < 37) {
+                    continent = "MEA";
+                }
+                setUserContinent(continent);
+                localStorage.setItem("eventador-continent", continent);
+                setDetectingLocation(false);
+                const matched = CONTINENTS.find((c) => c.id === continent);
+                setLocationNote(`Detected: ${matched ? matched.label : continent}`);
+            }, () => {
+                const continent = detectContinentFromTimezone();
+                setUserContinent(continent);
+                localStorage.setItem("eventador-continent", continent);
+                setDetectingLocation(false);
+                const matched = CONTINENTS.find((c) => c.id === continent);
+                setLocationNote(`Timezone: ${matched ? matched.label : continent}`);
+            }, { timeout: 6000 });
+        }
+        else {
+            const continent = detectContinentFromTimezone();
+            setUserContinent(continent);
+            localStorage.setItem("eventador-continent", continent);
             setDetectingLocation(false);
-            setLocationNote(`📍 Nearest detected tech hub: ${closest.name}`);
-        }, () => {
-            setDetectingLocation(false);
-            setLocationNote("Location access declined. Please choose your city manually.");
-        }, { timeout: 8000 });
+            const matched = CONTINENTS.find((c) => c.id === continent);
+            setLocationNote(`Timezone: ${matched ? matched.label : continent}`);
+        }
     };
-    const handleCityChange = (cityName) => {
-        setUserCity(cityName);
-        localStorage.setItem("eventador-city", cityName);
-        setLocationNote(`📍 Selected hub: ${cityName === "ALL" ? "All Locations" : cityName}`);
-    };
+    // Real "Trending This Week" events sorted by actual earliest date
+    const trendingEvents = useMemo(() => {
+        return [...events].sort((a, b) => {
+            const tA = new Date(a.start_date || 0).getTime();
+            const tB = new Date(b.start_date || 0).getTime();
+            return tA - tB;
+        }).slice(0, 6);
+    }, [events]);
     // Filtered events for the Explore tab
     const exploreEvents = useMemo(() => {
         return events.filter((ev) => {
@@ -303,38 +413,39 @@ function App() {
                 return false;
             if (filterPrice !== "ALL" && String(ev.is_free) !== String(filterPrice))
                 return false;
-            if (filterCity !== "ALL" && (!ev.city || !ev.city.toLowerCase().includes(filterCity.toLowerCase())))
+            if (filterContinent !== "ALL" && ev.continent !== "ALL" && ev.continent !== filterContinent)
                 return false;
             if (search.trim()) {
                 const q = search.toLowerCase();
                 const titleMatch = ev.title && ev.title.toLowerCase().includes(q);
                 const orgMatch = ev.organizer_name && ev.organizer_name.toLowerCase().includes(q);
                 const cityMatch = ev.city && ev.city.toLowerCase().includes(q);
-                if (!titleMatch && !orgMatch && !cityMatch)
+                const countryMatch = ev.country && ev.country.toLowerCase().includes(q);
+                if (!titleMatch && !orgMatch && !cityMatch && !countryMatch)
                     return false;
             }
             return true;
         });
-    }, [events, search, filterType, filterFormat, filterPrice, filterCity]);
+    }, [events, search, filterType, filterFormat, filterPrice, filterContinent]);
     // Filtered for Hackathons Tab
     const hackathonEvents = useMemo(() => {
-        return events.filter((ev) => ev.event_type === "HACKATHON" || /hackathon|ideathon/i.test(ev.title));
+        return events.filter((ev) => ev.event_type === "HACKATHON" || /hackathon|ideathon|bounty/i.test(ev.title));
     }, [events]);
     // Filtered for Meetups Tab
     const meetupEvents = useMemo(() => {
-        return events.filter((ev) => ev.event_type === "MEETUP" || /meetup|community/i.test(ev.title));
+        return events.filter((ev) => ev.event_type === "MEETUP" || /meetup|community|founder/i.test(ev.title));
     }, [events]);
-    // Filtered for Near Me Tab (Offline + Hybrid in user's city)
+    // Filtered for Near Me Tab (Continent + In-Person / Hybrid)
     const nearMeEvents = useMemo(() => {
-        if (userCity === "ALL") {
-            return events.filter((ev) => ev.format === "OFFLINE" || ev.format === "HYBRID");
-        }
         return events.filter((ev) => {
-            const isOfflineOrHybrid = ev.format === "OFFLINE" || ev.format === "HYBRID";
-            const cityMatches = ev.city && ev.city.toLowerCase().includes(userCity.toLowerCase());
-            return isOfflineOrHybrid && cityMatches;
+            const isPhysical = ev.format === "OFFLINE" || ev.format === "HYBRID";
+            if (!isPhysical)
+                return false;
+            if (userContinent === "ALL")
+                return true;
+            return ev.continent === "ALL" || ev.continent === userContinent;
         });
-    }, [events, userCity]);
+    }, [events, userContinent]);
     const formatDate = (dateStr) => {
         if (!dateStr)
             return "Upcoming";
@@ -346,35 +457,39 @@ function App() {
             return dateStr;
         }
     };
-    // Helper to render an event card
+    const currentContinentLabel = useMemo(() => {
+        const c = CONTINENTS.find((item) => item.id === userContinent);
+        return c ? c.label : "Worldwide / Global";
+    }, [userContinent]);
+    // Render an event card
     const renderEventCard = (ev) => {
-        const isUserCity = userCity !== "ALL" && ev.city && ev.city.toLowerCase().includes(userCity.toLowerCase());
+        const isNearby = userContinent !== "ALL" && (ev.continent === userContinent || ev.continent === "ALL");
         return (React.createElement("div", { key: ev.event_id, className: "event-card" },
             React.createElement("div", null,
                 React.createElement("div", { className: "card-badges" },
                     React.createElement("span", { className: "badge-pill badge-type" }, ev.event_type || "EVENT"),
                     React.createElement("span", { className: "badge-pill badge-online" }, ev.format || "HYBRID"),
                     ev.is_free ? (React.createElement("span", { className: "badge-pill badge-free" }, "FREE")) : (React.createElement("span", { className: "badge-pill badge-paid" }, "PAID")),
-                    isUserCity && (React.createElement("span", { className: "badge-pill badge-local" }, "\uD83D\uDCCD IN YOUR CITY"))),
+                    isNearby && ev.format !== "ONLINE" && (React.createElement("span", { className: "badge-pill badge-local" }, "IN YOUR REGION"))),
                 React.createElement("h3", { className: "card-title" }, ev.title),
                 React.createElement("p", { className: "card-org" },
                     "Organized by ",
                     ev.organizer_name || "Community Partner"),
                 React.createElement("div", { className: "card-meta-list" },
                     React.createElement("div", { className: "meta-row" },
-                        React.createElement("span", null, "\uD83D\uDCC5"),
-                        React.createElement("span", null,
+                        React.createElement("span", { style: { fontSize: "0.85rem", opacity: 0.8 } }, "Date:"),
+                        React.createElement("span", { style: { fontWeight: 600 } },
                             formatDate(ev.start_date),
                             " ",
                             ev.end_date ? `— ${formatDate(ev.end_date)}` : "")),
                     React.createElement("div", { className: "meta-row" },
-                        React.createElement("span", null, "\uD83D\uDCCD"),
+                        React.createElement("span", { style: { fontSize: "0.85rem", opacity: 0.8 } }, "Location:"),
                         React.createElement("span", null,
-                            ev.city ? `${ev.city}, India` : "Online / Remote",
+                            ev.city ? `${ev.city}, ${ev.country || ""}` : "Global Virtual",
                             " ",
                             ev.venue ? `(${ev.venue})` : "")),
-                    ev.prize && (React.createElement("div", { className: "meta-row", style: { color: "var(--color-orange)", fontWeight: 600 } },
-                        React.createElement("span", null, "\uD83C\uDFC6"),
+                    ev.prize && (React.createElement("div", { className: "meta-row", style: { color: "var(--color-orange)", fontWeight: 700 } },
+                        React.createElement("span", null, "Prize:"),
                         React.createElement("span", null, ev.prize))))),
             React.createElement("div", { className: "card-footer" },
                 React.createElement("button", { className: "btn-card-details", onClick: () => setSelectedEvent(ev) }, "View Pass"),
@@ -385,45 +500,37 @@ function App() {
             React.createElement("nav", { className: "navbar" },
                 React.createElement("div", { className: "nav-brand", onClick: () => navigateTo("home") },
                     React.createElement("img", { src: "/logo.png", alt: "Eventador", className: "brand-logo-img", onError: (e) => { e.target.style.display = 'none'; } }),
-                    React.createElement("span", null, "Eventador"),
-                    React.createElement("span", { className: "brand-badge" }, "VERIFIED")),
+                    React.createElement("span", null, "Eventador")),
                 React.createElement("div", { className: "nav-links" },
                     React.createElement("span", { className: "nav-link " + (activeTab === "home" ? "active" : ""), onClick: () => navigateTo("home") }, "Home"),
                     React.createElement("span", { className: "nav-link " + (activeTab === "explore" ? "active" : ""), onClick: () => navigateTo("explore") }, "Explore"),
                     React.createElement("span", { className: "nav-link " + (activeTab === "hackathons" ? "active" : ""), onClick: () => navigateTo("hackathons") }, "Hackathons"),
                     React.createElement("span", { className: "nav-link " + (activeTab === "meetups" ? "active" : ""), onClick: () => navigateTo("meetups") }, "Meetups"),
-                    React.createElement("span", { className: "nav-link " + (activeTab === "nearme" ? "active" : ""), onClick: () => navigateTo("nearme") }, "Near Me \uD83D\uDCCD"),
-                    React.createElement("span", { className: "nav-link " + (activeTab === "osint" ? "active" : ""), onClick: () => navigateTo("osint") }, "OSINT Tools \uD83D\uDD0D")),
+                    React.createElement("span", { className: "nav-link " + (activeTab === "nearme" ? "active" : ""), onClick: () => navigateTo("nearme") }, "Near Me"),
+                    React.createElement("span", { className: "nav-link " + (activeTab === "osint" ? "active" : ""), onClick: () => navigateTo("osint") }, "OSINT Tools"),
+                    React.createElement("span", { className: "nav-link " + (activeTab === "bots" ? "active" : ""), onClick: () => navigateTo("bots") }, "Bots")),
                 React.createElement("div", { className: "nav-actions" },
-                    React.createElement("div", { className: "theme-switcher" },
-                        React.createElement("button", { className: "theme-btn " + (themePref === "light" ? "active" : ""), onClick: () => setThemePref("light"), title: "Light Mode" }, "\u2600\uFE0F Light"),
-                        React.createElement("button", { className: "theme-btn " + (themePref === "dark" ? "active" : ""), onClick: () => setThemePref("dark"), title: "Dark Mode" }, "\uD83C\uDF19 Dark"),
-                        React.createElement("button", { className: "theme-btn " + (themePref === "system" ? "active" : ""), onClick: () => setThemePref("system"), title: "System Default" }, "\u2699\uFE0F Auto")),
-                    React.createElement("a", { href: "https://t.me/EventadorBot", target: "_blank", rel: "noopener noreferrer", className: "btn-action-warm" }, "Telegram Bot")))),
-        React.createElement("div", { className: "location-strip" },
-            React.createElement("div", { className: "location-bar" },
-                React.createElement("div", { className: "location-left" },
-                    React.createElement("span", null, "\uD83D\uDCCD Offline Radar:"),
-                    React.createElement("span", { style: { color: "var(--color-orange)" } }, userCity === "ALL" ? "All Indian Hubs" : userCity),
-                    locationNote && (React.createElement("span", { style: { fontSize: "0.76rem", color: "var(--text-muted)", fontWeight: 500 } },
-                        "(",
-                        locationNote,
-                        ")"))),
-                React.createElement("div", { className: "location-right" },
-                    React.createElement("button", { className: "btn-detect", onClick: detectUserLocation, disabled: detectingLocation },
-                        React.createElement("span", null, "\uD83C\uDFAF"),
-                        React.createElement("span", null, detectingLocation ? "Detecting..." : "Detect Location")),
-                    React.createElement("select", { className: "city-select", value: userCity, onChange: (e) => handleCityChange(e.target.value) },
-                        React.createElement("option", { value: "ALL" }, "All Hubs / Remote"),
-                        React.createElement("option", { value: "Bengaluru" }, "Bengaluru"),
-                        React.createElement("option", { value: "Delhi" }, "Delhi NCR"),
-                        React.createElement("option", { value: "Mumbai" }, "Mumbai"),
-                        React.createElement("option", { value: "Hyderabad" }, "Hyderabad"),
-                        React.createElement("option", { value: "Pune" }, "Pune"),
-                        React.createElement("option", { value: "Chennai" }, "Chennai"),
-                        React.createElement("option", { value: "Kolkata" }, "Kolkata"),
-                        React.createElement("option", { value: "Jaipur" }, "Jaipur"),
-                        React.createElement("option", { value: "Ahmedabad" }, "Ahmedabad"))))),
+                    React.createElement("button", { className: "btn-action-bot", onClick: () => navigateTo("bots") }, "Add Bot \u2197"),
+                    React.createElement("div", { className: "profile-wrap", ref: profileRef },
+                        React.createElement("button", { className: "profile-btn " + (showProfileMenu ? "active" : ""), onClick: () => setShowProfileMenu(!showProfileMenu), title: "Settings & Appearance", "aria-label": "Settings and theme" },
+                            React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+                                React.createElement("path", { d: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" }),
+                                React.createElement("circle", { cx: "12", cy: "7", r: "4" }))),
+                        showProfileMenu && (React.createElement("div", { className: "profile-popover" },
+                            React.createElement("div", { className: "popover-header" }, "Theme Appearance"),
+                            React.createElement("div", { className: "theme-segmented" },
+                                React.createElement("button", { className: "theme-seg-btn " + (themePref === "light" ? "active" : ""), onClick: () => setThemePref("light") }, "Light"),
+                                React.createElement("button", { className: "theme-seg-btn " + (themePref === "dark" ? "active" : ""), onClick: () => setThemePref("dark") }, "Dark"),
+                                React.createElement("button", { className: "theme-seg-btn " + (themePref === "system" ? "active" : ""), onClick: () => setThemePref("system") }, "System")),
+                            React.createElement("div", { className: "popover-header", style: { marginTop: "0.25rem" } }, "Continental Radar"),
+                            React.createElement("div", { className: "location-detected-row" },
+                                React.createElement("span", null, "Region:"),
+                                React.createElement("button", { className: "btn-redetect", onClick: handleDetectLocation, disabled: detectingLocation }, detectingLocation ? "Detecting..." : "Detect Location")),
+                            React.createElement("select", { className: "dropdown-select", style: { fontSize: "0.8rem", padding: "0.38rem 0.5rem" }, value: userContinent, onChange: (e) => {
+                                    setUserContinent(e.target.value);
+                                    localStorage.setItem("eventador-continent", e.target.value);
+                                } }, CONTINENTS.map((c) => (React.createElement("option", { key: c.id, value: c.id }, c.label)))),
+                            locationNote && (React.createElement("span", { style: { fontSize: "0.72rem", color: "var(--color-orange)", fontWeight: 600 } }, locationNote)))))))),
         activeTab === "home" && (React.createElement("div", null,
             React.createElement("header", { className: "hero-container" },
                 React.createElement("div", { className: "hero-content" },
@@ -435,21 +542,21 @@ function App() {
                         React.createElement("em", null, "community"),
                         " to ",
                         React.createElement("em", null, "grand stage.")),
-                    React.createElement("p", { className: "hero-desc" }, "Eventador continuously monitors, verifies, and surfaces upcoming hackathons, meetups, workshops, and OSINT leads across India. 100% genuine registration links, zero scams."),
+                    React.createElement("p", { className: "hero-desc" }, "Eventador autonomously discovers and verifies upcoming hackathons, meetups, workshops, and OSINT leads worldwide. 100% genuine registration links, zero scams."),
                     React.createElement("div", { className: "hero-buttons" },
-                        React.createElement("button", { className: "btn-action-primary", onClick: () => navigateTo("explore") }, "Explore All Events \u2198"),
-                        React.createElement("button", { className: "btn-action-primary", style: { background: "var(--surface-subtle)", color: "var(--text)", border: "1px solid var(--border)" }, onClick: () => navigateTo("nearme") }, "Find Near Me \uD83D\uDCCD"),
-                        React.createElement("button", { className: "btn-action-primary", style: { background: "var(--surface-subtle)", color: "var(--text)", border: "1px solid var(--border)" }, onClick: () => navigateTo("osint") }, "Google OSINT Tools \uD83D\uDD0D")),
+                        React.createElement("button", { className: "btn-action-primary", onClick: () => navigateTo("explore") }, "Explore Directory \u2198"),
+                        React.createElement("button", { className: "btn-action-secondary", onClick: () => navigateTo("bots") }, "Community Bots \u2197"),
+                        React.createElement("button", { className: "btn-action-secondary", onClick: () => navigateTo("osint") }, "Google OSINT Tools \u2197")),
                     React.createElement("div", { className: "hero-metrics-row" },
                         React.createElement("div", { className: "metric-item" },
                             React.createElement("span", { className: "metric-num" }, "1,240+"),
-                            React.createElement("span", null, "Verified Events")),
+                            React.createElement("span", null, "Verified Tech Events")),
                         React.createElement("div", { className: "metric-item" },
                             React.createElement("span", { className: "metric-num" }, "100%"),
-                            React.createElement("span", null, "Official Links")),
+                            React.createElement("span", null, "First-Party Links")),
                         React.createElement("div", { className: "metric-item" },
                             React.createElement("span", { className: "metric-num" }, "0"),
-                            React.createElement("span", null, "Phishing")))),
+                            React.createElement("span", null, "Phishing or Spam")))),
                 React.createElement("div", { className: "hero-orbit-canvas", onMouseEnter: () => setIsHovered(true), onMouseLeave: () => setIsHovered(false) },
                     React.createElement("div", { className: "hero-big-circle" },
                         React.createElement("div", { className: "circle-dot circle-dot-orange" }),
@@ -480,27 +587,43 @@ function App() {
                                     React.createElement("span", { style: { fontSize: "0.75rem", fontWeight: 700, textDecoration: "underline" } }, "View Pass \u2192")))));
                         }),
                         React.createElement("div", { className: "card-indicator-dots" }, heroDeckEvents.map((_, i) => (React.createElement("div", { key: i, className: `indicator-dot ${i === deckIndex ? "active" : ""}`, onClick: () => setDeckIndex(i) }))))))),
-            React.createElement("div", { className: "page-container", style: { paddingTop: "1rem" } },
+            React.createElement("div", { className: "page-container", style: { paddingTop: "0.5rem" } },
+                React.createElement("div", { className: "pillars-grid" },
+                    React.createElement("div", { className: "pillar-card" },
+                        React.createElement("div", null,
+                            React.createElement("span", { className: "pillar-badge" }, "WEB DIRECTORY & RADAR"),
+                            React.createElement("h3", { className: "pillar-title", style: { marginTop: "0.5rem" } }, "Global Event Radar with Continental Filters"),
+                            React.createElement("p", { className: "pillar-desc", style: { marginTop: "0.4rem" } }, "Search 1,240+ verified hackathons, summits, and meetups. Filter by continental zones, tech stacks, offline cities, and launch Google OSINT searches.")),
+                        React.createElement("button", { className: "btn-action-secondary", style: { alignSelf: "flex-start" }, onClick: () => navigateTo("explore") }, "Open Directory \u2198")),
+                    React.createElement("div", { className: "pillar-card" },
+                        React.createElement("div", null,
+                            React.createElement("span", { className: "pillar-badge", style: { color: "var(--color-violet)" } }, "COMMUNITY AUTOMATION (CARL-STYLE)"),
+                            React.createElement("h3", { className: "pillar-title", style: { marginTop: "0.5rem" } }, "Discord, Telegram & WhatsApp Bot Fleet"),
+                            React.createElement("p", { className: "pillar-desc", style: { marginTop: "0.4rem" } }, "One-click add Eventador to your Discord server or Telegram group. Stream verified event drops, deadline reminders, and role mentions without manual posting.")),
+                        React.createElement("button", { className: "btn-action-primary", style: { alignSelf: "flex-start" }, onClick: () => navigateTo("bots") }, "Explore Bots \u2197"))),
                 React.createElement("div", { className: "section-header" },
                     React.createElement("div", null,
-                        React.createElement("h2", { className: "section-title" }, "\uD83D\uDD25 Trending This Week"),
-                        React.createElement("p", { className: "section-sub" }, "Autonomous verified events happening across top developer communities.")),
+                        React.createElement("h2", { className: "section-title" }, "Trending This Week"),
+                        React.createElement("p", { className: "section-sub" }, "Autonomous verified events sorted by upcoming registration deadlines.")),
                     React.createElement("button", { className: "btn-card-details", onClick: () => navigateTo("explore") },
                         "View All ",
                         events.length,
                         " Events \u2192")),
-                React.createElement("div", { className: "events-grid" }, events.slice(0, 6).map(renderEventCard))))),
+                React.createElement("div", { className: "events-grid" }, trendingEvents.map(renderEventCard))))),
         activeTab === "explore" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
-                    React.createElement("h2", { className: "section-title" }, "\uD83C\uDF10 Explore Verified Events"),
-                    React.createElement("p", { className: "section-sub" }, "Filter by event format, technology domain, city, or pricing."))),
+                    React.createElement("h2", { className: "section-title" }, "Explore Verified Events"),
+                    React.createElement("p", { className: "section-sub" }, "Filter by continental zone, format, technology domain, or pricing."))),
             React.createElement("div", { className: "filter-card" },
                 React.createElement("div", { className: "search-row" },
                     React.createElement("svg", { className: "search-icon-svg", viewBox: "0 0 20 20" },
                         React.createElement("path", { fillRule: "evenodd", d: "M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z", clipRule: "evenodd" })),
-                    React.createElement("input", { type: "text", className: "search-field", placeholder: "Search events, organizers, technologies, or cities...", value: search, onChange: (e) => setSearch(e.target.value) })),
+                    React.createElement("input", { type: "text", className: "search-field", placeholder: "Search events, organizers, technologies, cities, or countries...", value: search, onChange: (e) => setSearch(e.target.value) })),
                 React.createElement("div", { className: "dropdowns-grid" },
+                    React.createElement("div", { className: "dropdown-group" },
+                        React.createElement("label", { className: "dropdown-label" }, "Continental Zone"),
+                        React.createElement("select", { className: "dropdown-select", value: filterContinent, onChange: (e) => setFilterContinent(e.target.value) }, CONTINENTS.map((c) => (React.createElement("option", { key: c.id, value: c.id }, c.label))))),
                     React.createElement("div", { className: "dropdown-group" },
                         React.createElement("label", { className: "dropdown-label" }, "Event Type"),
                         React.createElement("select", { className: "dropdown-select", value: filterType, onChange: (e) => setFilterType(e.target.value) },
@@ -522,18 +645,7 @@ function App() {
                         React.createElement("select", { className: "dropdown-select", value: filterPrice, onChange: (e) => setFilterPrice(e.target.value) },
                             React.createElement("option", { value: "ALL" }, "All Events"),
                             React.createElement("option", { value: "1" }, "Free Entry Only"),
-                            React.createElement("option", { value: "0" }, "Paid Entry"))),
-                    React.createElement("div", { className: "dropdown-group" },
-                        React.createElement("label", { className: "dropdown-label" }, "Region / City"),
-                        React.createElement("select", { className: "dropdown-select", value: filterCity, onChange: (e) => setFilterCity(e.target.value) },
-                            React.createElement("option", { value: "ALL" }, "All Locations"),
-                            React.createElement("option", { value: "Bengaluru" }, "Bengaluru"),
-                            React.createElement("option", { value: "Delhi" }, "Delhi NCR"),
-                            React.createElement("option", { value: "Mumbai" }, "Mumbai"),
-                            React.createElement("option", { value: "Hyderabad" }, "Hyderabad"),
-                            React.createElement("option", { value: "Pune" }, "Pune"),
-                            React.createElement("option", { value: "Chennai" }, "Chennai"),
-                            React.createElement("option", { value: "Kolkata" }, "Kolkata"))))),
+                            React.createElement("option", { value: "0" }, "Paid Entry"))))),
             React.createElement("div", { className: "section-header", style: { marginBottom: "1rem" } },
                 React.createElement("span", { style: { fontSize: "0.88rem", color: "var(--text-muted)" } },
                     "Showing ",
@@ -543,41 +655,44 @@ function App() {
         activeTab === "hackathons" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
-                    React.createElement("h2", { className: "section-title" }, "\u26A1 Hackathons & Coding Contests"),
-                    React.createElement("p", { className: "section-sub" }, "Discover competitive hackathons with prize pools, grants, and fast tracks."))),
+                    React.createElement("h2", { className: "section-title" }, "Hackathons & Coding Contests"),
+                    React.createElement("p", { className: "section-sub" }, "Discover competitive hackathons with prize pools, bounties, grants, and hiring tracks."))),
             React.createElement("div", { className: "events-grid" }, hackathonEvents.map(renderEventCard)))),
         activeTab === "meetups" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
-                    React.createElement("h2", { className: "section-title" }, "\uD83E\uDD1D Developer Meetups & User Groups"),
-                    React.createElement("p", { className: "section-sub" }, "Local GDG chapters, AWS user groups, React & Rust meetups."))),
+                    React.createElement("h2", { className: "section-title" }, "Developer Meetups & User Groups"),
+                    React.createElement("p", { className: "section-sub" }, "Local GDG chapters, AWS user groups, Rust, React, and AI community gatherings."))),
             React.createElement("div", { className: "events-grid" }, meetupEvents.map(renderEventCard)))),
         activeTab === "nearme" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "radar-banner" },
                 React.createElement("div", { className: "radar-circle" },
                     React.createElement("div", { className: "radar-ping" }),
-                    React.createElement("span", { style: { fontSize: "1.4rem" } }, "\uD83D\uDCCD")),
-                React.createElement("div", null,
-                    React.createElement("h3", { style: { fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.25rem" } }, "Autonomous Offline Event Radar"),
+                    React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "var(--color-orange)", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+                        React.createElement("circle", { cx: "12", cy: "12", r: "10" }),
+                        React.createElement("circle", { cx: "12", cy: "12", r: "6" }),
+                        React.createElement("circle", { cx: "12", cy: "12", r: "2" }))),
+                React.createElement("div", { style: { flex: 1 } },
+                    React.createElement("h3", { style: { fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.25rem" } }, "Continental Offline & Hybrid Event Radar"),
                     React.createElement("p", { style: { fontSize: "0.88rem", color: "var(--text-muted)" } },
-                        "Showing in-person and hybrid tech events located in ",
-                        React.createElement("strong", null, userCity === "ALL" ? "All Indian Hubs" : userCity),
-                        ". Use the city bar above to pinpoint your hometown."))),
+                        "Showing events in ",
+                        React.createElement("strong", null, currentContinentLabel),
+                        ". Click \"Detect Location\" to update your continental region automatically via browser geolocation.")),
+                React.createElement("button", { className: "btn-action-primary", onClick: handleDetectLocation, disabled: detectingLocation }, detectingLocation ? "Detecting..." : "Detect Location")),
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
-                    React.createElement("h2", { className: "section-title" }, "\uD83D\uDCCD Nearby In-Person Events"),
+                    React.createElement("h2", { className: "section-title" }, "Nearby In-Person & Hybrid Events"),
                     React.createElement("p", { className: "section-sub" },
                         nearMeEvents.length,
-                        " events happening near your selected location."))),
-            React.createElement("div", { className: "events-grid" }, nearMeEvents.length > 0 ? (nearMeEvents.map(renderEventCard)) : (React.createElement("p", { style: { color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" } },
-                "No upcoming offline events scheduled for ",
-                userCity,
-                " yet. Try switching to \"All Hubs\" or exploring virtual events!"))))),
+                        " events scheduled in ",
+                        currentContinentLabel,
+                        "."))),
+            React.createElement("div", { className: "events-grid" }, nearMeEvents.length > 0 ? (nearMeEvents.map(renderEventCard)) : (React.createElement("p", { style: { color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" } }, "No upcoming offline events scheduled for this region yet. Try exploring the global directory or virtual events!"))))),
         activeTab === "osint" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
-                    React.createElement("h2", { className: "section-title" }, "\uD83D\uDD0D Google Search OSINT & Social Radar"),
-                    React.createElement("p", { className: "section-sub" }, "Curated open-intelligence dorks to discover unlisted events on Lu.ma, Twitter/X, LinkedIn, and GitHub."))),
+                    React.createElement("h2", { className: "section-title" }, "Google Search OSINT & Social Radar"),
+                    React.createElement("p", { className: "section-sub" }, "Curated open-intelligence search dorks to discover unlisted events on Lu.ma, Twitter/X, LinkedIn, and GitHub."))),
             React.createElement("div", { className: "osint-grid" }, OSINT_DORKS.map((dork, i) => (React.createElement("div", { key: i, className: "osint-card" },
                 React.createElement("div", null,
                     React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" } },
@@ -586,6 +701,142 @@ function App() {
                     React.createElement("p", { style: { fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.75rem" } }, dork.desc),
                     React.createElement("div", { className: "osint-code" }, dork.query)),
                 React.createElement("a", { href: dork.url, target: "_blank", rel: "noopener noreferrer", className: "btn-card-register", style: { justifyContent: "center", marginTop: "0.5rem" } }, "Launch Google OSINT Search \u2197"))))))),
+        activeTab === "bots" && (React.createElement("div", { className: "page-container" },
+            React.createElement("div", { className: "bots-hero" },
+                React.createElement("span", { className: "pillar-badge", style: { color: "var(--color-discord)" } }, "COMMUNITY AUTOMATION"),
+                React.createElement("h1", { style: { fontSize: "clamp(2rem, 3.5vw, 2.8rem)", fontWeight: 800, letterSpacing: "-0.03em" } }, "Eventador Bot Fleet for Your Community"),
+                React.createElement("p", { style: { color: "var(--text-muted)", fontSize: "1rem", lineHeight: 1.6, maxWidth: "640px" } },
+                    "Just like ",
+                    React.createElement("strong", null, "Carl-bot"),
+                    " empowers Discord moderation, Eventador streams verified tech events, hackathons, and deadline alerts directly into your Discord servers, Telegram groups, and WhatsApp circles.")),
+            React.createElement("div", { className: "bots-grid" },
+                React.createElement("div", { className: "bot-card bot-card-discord" },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "bot-card-header" },
+                            React.createElement("div", { className: "bot-icon-circle", style: { background: "var(--color-discord)" } },
+                                React.createElement("svg", { width: "26", height: "26", viewBox: "0 0 24 24", fill: "currentColor" },
+                                    React.createElement("path", { d: "M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" }))),
+                            React.createElement("div", null,
+                                React.createElement("h3", { style: { fontSize: "1.2rem", fontWeight: 800 } }, "Discord Bot"),
+                                React.createElement("span", { style: { fontSize: "0.78rem", color: "var(--text-muted)" } }, "Slash Commands & Automated Channels"))),
+                        React.createElement("p", { style: { fontSize: "0.88rem", color: "var(--text-sub)", margin: "1rem 0" } }, "Integrate into your tech server to deliver hourly verified event drops, deadline countdowns, and continental filtering."),
+                        React.createElement("div", { className: "bot-features-list" },
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null,
+                                    React.createElement("strong", null, "/events [region]"),
+                                    " \u2014 Instant command search")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null,
+                                    React.createElement("strong", null, "/auto-stream #announcements"),
+                                    " \u2014 Autonomous event feed")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null,
+                                    React.createElement("strong", null, "@Hackers role pings"),
+                                    " for urgent registration deadlines")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "100% scam-free, zero spam, verified registration links")))),
+                    React.createElement("a", { href: "https://discord.com/api/oauth2/authorize?client_id=1234567890&permissions=2147483648&scope=bot%20applications.commands", target: "_blank", rel: "noopener noreferrer", className: "btn-action-primary", style: { background: "var(--color-discord)", color: "#fff", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.9rem" } }, "Add to Discord \u2197")),
+                React.createElement("div", { className: "bot-card bot-card-telegram" },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "bot-card-header" },
+                            React.createElement("div", { className: "bot-icon-circle", style: { background: "var(--color-telegram)" } },
+                                React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "currentColor" },
+                                    React.createElement("path", { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .34z" }))),
+                            React.createElement("div", null,
+                                React.createElement("h3", { style: { fontSize: "1.2rem", fontWeight: 800 } }, "Telegram Bot"),
+                                React.createElement("span", { style: { fontSize: "0.78rem", color: "var(--text-muted)" } }, "Groups, Channels & Direct Chat"))),
+                        React.createElement("p", { style: { fontSize: "0.88rem", color: "var(--text-sub)", margin: "1rem 0" } },
+                            "Add ",
+                            React.createElement("strong", null, "@EventadorBot"),
+                            " to your developer group or subscribe directly for daily continental event radar digests."),
+                        React.createElement("div", { className: "bot-features-list" },
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "Instant group broadcasts when high-prize hackathons launch")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null,
+                                    "Continental filtering command: ",
+                                    React.createElement("strong", null, "/region [name]"))),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "One-tap registration buttons directly inside Telegram")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "Lightweight, fast, and completely free to use")))),
+                    React.createElement("a", { href: "https://t.me/EventadorBot", target: "_blank", rel: "noopener noreferrer", className: "btn-action-primary", style: { background: "var(--color-telegram)", color: "#fff", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.9rem" } }, "Add to Telegram \u2197")),
+                React.createElement("div", { className: "bot-card bot-card-whatsapp" },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "bot-card-header" },
+                            React.createElement("div", { className: "bot-icon-circle", style: { background: "var(--color-whatsapp)" } },
+                                React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "currentColor" },
+                                    React.createElement("path", { d: "M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.79.47 3.53 1.37 5.08L2 22l5.16-1.35c1.49.82 3.17 1.26 4.88 1.26h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.79 14.15c-.24.68-1.4 1.26-1.92 1.34-.51.08-1.17.11-3.37-.8-1.89-.78-3.11-2.7-3.21-2.83-.09-.13-1.83-2.44-1.83-4.66 0-2.22 1.16-3.31 1.57-3.76.41-.45.9-.56 1.2-.56.3 0 .6.01.86.02.28.01.65-.11 1.02.77.38.89 1.3 3.17 1.41 3.4.11.23.19.49.04.79-.15.3-.23.49-.45.75-.22.26-.47.58-.67.78-.22.22-.45.46-.19.9.26.44 1.16 1.91 2.5 3.1 1.72 1.53 3.17 2 3.62 2.22.45.22.71.19.98-.12.26-.3.13-1.35 1.43-1.87.3-.12.6-.06.86.06.26.13 1.66.78 1.95.93.28.14.47.22.54.34.07.12.07.7-.17 1.38z" }))),
+                            React.createElement("div", null,
+                                React.createElement("h3", { style: { fontSize: "1.2rem", fontWeight: 800 } }, "WhatsApp Radar"),
+                                React.createElement("span", { style: { fontSize: "0.78rem", color: "var(--text-muted)" } }, "Weekly Curated Digest"))),
+                        React.createElement("p", { style: { fontSize: "0.88rem", color: "var(--text-sub)", margin: "1rem 0" } }, "Join our official WhatsApp community for a weekly Sunday digest of upcoming hackathons, grants, and demo days."),
+                        React.createElement("div", { className: "bot-features-list" },
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "Curated top 5 global & continental hackathons every Sunday")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "Direct calendar invites (.ics) & deadline reminder pings")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "Community of 10,000+ builders, hackers, and mentors")),
+                            React.createElement("div", { className: "bot-feature-item" },
+                                React.createElement("span", null, "\u2713"),
+                                React.createElement("span", null, "Zero spam policy: strictly curated weekly bulletins only")))),
+                    React.createElement("a", { href: "https://chat.whatsapp.com/EventadorCommunity", target: "_blank", rel: "noopener noreferrer", className: "btn-action-primary", style: { background: "var(--color-whatsapp)", color: "#fff", justifyContent: "center", padding: "0.65rem 1rem", fontSize: "0.9rem" } }, "Join WhatsApp Radar \u2197"))),
+            React.createElement("div", { className: "section-header", style: { marginTop: "1rem" } },
+                React.createElement("div", null,
+                    React.createElement("h2", { className: "section-title" }, "Interactive Discord Feed Preview"),
+                    React.createElement("p", { className: "section-sub" }, "See how Eventador formats real-time verified event alerts inside your Discord channels."))),
+            React.createElement("div", { className: "discord-mockup" },
+                React.createElement("div", { className: "discord-author" },
+                    React.createElement("span", { style: { color: "#5865F2", fontWeight: 800 } }, "\u25CF Eventador Radar"),
+                    React.createElement("span", { style: { background: "#5865F2", color: "#fff", fontSize: "0.65rem", padding: "1px 4px", borderRadius: "3px" } }, "BOT"),
+                    React.createElement("span", { style: { fontSize: "0.72rem", color: "#949ba4", marginLeft: "0.3rem" } }, "Today at 10:00 AM")),
+                React.createElement("div", { className: "discord-title" }, "Smart India Hackathon 2026 \u2014 Official Registration Open"),
+                React.createElement("p", { style: { fontSize: "0.82rem", color: "#dbdee1", marginBottom: "0.5rem" } }, "Organized by Ministry of Education & AICTE \u2022 100% genuine registration link verified."),
+                React.createElement("div", { className: "discord-fields" },
+                    React.createElement("div", null,
+                        React.createElement("strong", { style: { color: "#b5bac1", fontSize: "0.72rem", textTransform: "uppercase" } }, "Format"),
+                        React.createElement("p", { style: { color: "#f2f3f5" } }, "Hybrid (In-Person + Regional Nodes)")),
+                    React.createElement("div", null,
+                        React.createElement("strong", { style: { color: "#b5bac1", fontSize: "0.72rem", textTransform: "uppercase" } }, "Prize Pool"),
+                        React.createElement("p", { style: { color: "#f2f3f5" } }, "\u20B91,00,00,000+ Prizes & Grants")),
+                    React.createElement("div", null,
+                        React.createElement("strong", { style: { color: "#b5bac1", fontSize: "0.72rem", textTransform: "uppercase" } }, "Date"),
+                        React.createElement("p", { style: { color: "#f2f3f5" } }, "Nov 15, 2026 \u2014 Nov 17, 2026")),
+                    React.createElement("div", null,
+                        React.createElement("strong", { style: { color: "#b5bac1", fontSize: "0.72rem", textTransform: "uppercase" } }, "Region"),
+                        React.createElement("p", { style: { color: "#f2f3f5" } }, "Asia-Pacific & Global South")))),
+            React.createElement("div", { className: "section-header", style: { marginTop: "2.5rem" } },
+                React.createElement("div", null,
+                    React.createElement("h2", { className: "section-title" }, "How Integration Works (3 Easy Steps)"),
+                    React.createElement("p", { className: "section-sub" }, "Zero complicated setup. Add the bot to your community in under 30 seconds."))),
+            React.createElement("div", { className: "setup-steps-grid" },
+                React.createElement("div", { className: "setup-step-card" },
+                    React.createElement("div", { className: "setup-step-num" }, "01"),
+                    React.createElement("h3", { style: { fontSize: "1.1rem", fontWeight: 800, marginBottom: "0.4rem" } }, "Invite the Bot"),
+                    React.createElement("p", { style: { fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 } }, "Click \"Add to Discord\" or \"Add to Telegram\" and select your server or community group with standard webhook permissions.")),
+                React.createElement("div", { className: "setup-step-card" },
+                    React.createElement("div", { className: "setup-step-num" }, "02"),
+                    React.createElement("h3", { style: { fontSize: "1.1rem", fontWeight: 800, marginBottom: "0.4rem" } }, "Select Channel & Region"),
+                    React.createElement("p", { style: { fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 } },
+                        "Run ",
+                        React.createElement("code", null, "/auto-stream #channel"),
+                        " and choose your continental region (e.g. Global South, North America, Europe) to filter local events.")),
+                React.createElement("div", { className: "setup-step-card" },
+                    React.createElement("div", { className: "setup-step-num" }, "03"),
+                    React.createElement("h3", { style: { fontSize: "1.1rem", fontWeight: 800, marginBottom: "0.4rem" } }, "Autonomous Verified Stream"),
+                    React.createElement("p", { style: { fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 } }, "Your community receives real-time verified event passes, deadline alerts, and official registration links without any manual posting."))))),
         selectedEvent && (React.createElement("div", { className: "modal-backdrop", onClick: () => setSelectedEvent(null) },
             React.createElement("div", { className: "modal-box", onClick: (e) => e.stopPropagation() },
                 React.createElement("button", { className: "modal-close", onClick: () => setSelectedEvent(null) }, "\u2715"),
@@ -599,22 +850,22 @@ function App() {
                     selectedEvent.organizer_name || "Community Partner"),
                 React.createElement("div", { className: "card-meta-list", style: { fontSize: "0.88rem" } },
                     React.createElement("div", { className: "meta-row" },
-                        React.createElement("span", null, "\uD83D\uDCC5"),
+                        React.createElement("span", { style: { fontWeight: 600 } }, "Date:"),
                         React.createElement("span", null,
                             formatDate(selectedEvent.start_date),
                             " ",
                             selectedEvent.end_date ? `— ${formatDate(selectedEvent.end_date)}` : "")),
                     React.createElement("div", { className: "meta-row" },
-                        React.createElement("span", null, "\uD83D\uDCCD"),
+                        React.createElement("span", { style: { fontWeight: 600 } }, "Location:"),
                         React.createElement("span", null,
-                            selectedEvent.city ? `${selectedEvent.city}, India` : "Online / Remote",
+                            selectedEvent.city ? `${selectedEvent.city}, ${selectedEvent.country || ""}` : "Global Virtual",
                             " ",
                             selectedEvent.venue ? `(${selectedEvent.venue})` : "")),
                     selectedEvent.price_detail && (React.createElement("div", { className: "meta-row" },
-                        React.createElement("span", null, "\uD83C\uDF9F\uFE0F"),
+                        React.createElement("span", { style: { fontWeight: 600 } }, "Pricing:"),
                         React.createElement("span", null, selectedEvent.price_detail))),
                     selectedEvent.prize && (React.createElement("div", { className: "meta-row", style: { color: "var(--color-orange)", fontWeight: 700 } },
-                        React.createElement("span", null, "\uD83C\uDFC6"),
+                        React.createElement("span", null, "Prizes & Grants:"),
                         React.createElement("span", null, selectedEvent.prize)))),
                 React.createElement("div", { style: { marginTop: "1.25rem", display: "flex", gap: "0.75rem" } },
                     React.createElement("a", { href: selectedEvent.registration_url || selectedEvent.event_url || "#", target: "_blank", rel: "noopener noreferrer", className: "btn-card-register", style: { flex: 1, justifyContent: "center", padding: "0.65rem 1rem" } }, "Open Official Registration \u2197"),

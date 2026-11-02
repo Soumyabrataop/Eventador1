@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eventador — Autonomous Tech Events & Hackathon Radar</title>
-  <meta name="description" content="Discover verified hackathons, developer meetups, conferences, and OSINT tech event leads across India and globally. 100% genuine registration links, zero spam.">
+  <meta name="description" content="Discover verified hackathons, developer meetups, conferences, and OSINT tech event leads worldwide. Integrate Eventador bot into Discord and Telegram.">
   <link rel="icon" type="image/png" href="/logo.png">
   
-  <!-- Typography (Sans + Editorial Serif for Elixpo-style headlines + Mono) -->
+  <!-- Typography (Plus Jakarta Sans + Editorial Playfair Display Serif + JetBrains Mono) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
@@ -24,6 +24,9 @@
       --color-blue: #3b82f6;
       --color-violet: #8b5cf6;
       --color-pink: #ec4899;
+      --color-discord: #5865F2;
+      --color-telegram: #229ED9;
+      --color-whatsapp: #25D366;
 
       /* Light Theme (Warm Porcelain / Paper Cream) */
       --bg: #fcfbf9;
@@ -35,7 +38,7 @@
       --text: #18181b;
       --text-muted: #71717a;
       --text-sub: #3f3f46;
-      --navbar-bg: rgba(255, 255, 255, 0.88);
+      --navbar-bg: rgba(255, 255, 255, 0.9);
       --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
       --card-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.08);
       
@@ -67,7 +70,7 @@
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --text-sub: #cbd5e1;
-      --navbar-bg: rgba(17, 20, 30, 0.88);
+      --navbar-bg: rgba(17, 20, 30, 0.9);
       --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
       --card-shadow-hover: 0 12px 36px rgba(0, 0, 0, 0.6);
 
@@ -110,12 +113,12 @@
       height: 500px;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.45;
+      opacity: 0.4;
     }
-    [data-theme="dark"] .bg-orbits { opacity: 0.2; }
+    [data-theme="dark"] .bg-orbits { opacity: 0.18; }
 
     /* ==========================================================================
-       Navbar (Pill Container)
+       Navbar (Pill Container) — Clean, Zero-Clash Design
        ========================================================================== */
     .navbar-wrapper {
       position: sticky;
@@ -133,7 +136,7 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border);
       border-radius: 9999px;
-      padding: 0.5rem 0.9rem;
+      padding: 0.5rem 0.95rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -147,7 +150,7 @@
       text-decoration: none;
       color: var(--text);
       font-weight: 800;
-      font-size: 1.1rem;
+      font-size: 1.12rem;
       cursor: pointer;
     }
     .brand-logo-img {
@@ -156,21 +159,11 @@
       border-radius: 8px;
       object-fit: cover;
     }
-    .brand-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
-      padding: 0.15rem 0.4rem;
-      border-radius: 9999px;
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      letter-spacing: 0.04em;
-    }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.3rem;
     }
     .nav-link {
       padding: 0.4rem 0.75rem;
@@ -183,7 +176,6 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
       border: 1px solid transparent;
     }
     .nav-link:hover {
@@ -200,76 +192,132 @@
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.6rem;
     }
 
-    /* 3-Way Theme Switcher */
-    .theme-switcher {
-      display: inline-flex;
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      border-radius: 9999px;
-      padding: 2px;
-    }
-    .theme-btn {
-      background: transparent;
-      border: none;
-      padding: 0.28rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.2rem;
-      transition: all 0.15s ease;
-    }
-    .theme-btn:hover { color: var(--text); }
-    .theme-btn.active {
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      font-weight: 700;
-    }
-
-    .btn-action-primary {
+    .btn-action-bot {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
       background: var(--text);
       color: var(--bg);
-      padding: 0.45rem 0.9rem;
+      padding: 0.42rem 0.85rem;
       border-radius: 9999px;
       font-size: 0.82rem;
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: none;
       transition: opacity 0.15s ease, transform 0.15s ease;
       cursor: pointer;
       border: none;
     }
-    .btn-action-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-action-bot:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    .btn-action-warm {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: var(--color-orange);
-      color: #ffffff;
-      padding: 0.42rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: transform 0.15s ease, opacity 0.15s ease;
+    /* Cloudflare-style Profile/Settings Dropdown */
+    .profile-wrap {
+      position: relative;
     }
-    .btn-action-warm:hover { opacity: 0.92; transform: translateY(-1px); }
+    .profile-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+    .profile-btn:hover, .profile-btn.active {
+      border-color: var(--color-orange);
+      background: var(--surface-hover);
+    }
+
+    .profile-popover {
+      position: absolute;
+      top: calc(100% + 0.65rem);
+      right: 0;
+      width: 260px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 0.95rem;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      animation: popoverFade 0.15s ease;
+    }
+    @keyframes popoverFade {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .popover-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+    .theme-segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .theme-seg-btn {
+      background: transparent;
+      border: none;
+      padding: 0.35rem 0.2rem;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .theme-seg-btn:hover { color: var(--text); }
+    .theme-seg-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-weight: 700;
+    }
+    .location-detected-row {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+    }
+    .btn-redetect {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.45rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .btn-redetect:hover { background: var(--surface-hover); }
 
     /* ==========================================================================
        Hero Section & Orbit Canvas with Stacked 3D Cards
        ========================================================================== */
     .hero-container {
       max-width: 1140px;
-      margin: 1.25rem auto 0.5rem;
+      margin: 1.5rem auto 0.5rem;
       padding: 1.25rem 1.25rem 0.5rem;
       display: grid;
       grid-template-columns: 1.15fr 0.95fr;
@@ -328,6 +376,38 @@
       gap: 0.65rem;
       margin-top: 0.25rem;
     }
+    .btn-action-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--text);
+      color: var(--bg);
+      padding: 0.48rem 0.95rem;
+      border-radius: 9999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-action-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-action-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--surface-subtle);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.48rem 0.95rem;
+      border-radius: 9999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-action-secondary:hover { background: var(--surface-hover); }
 
     .hero-metrics-row {
       display: flex;
@@ -349,11 +429,11 @@
       font-size: 0.92rem;
     }
 
-    /* Right Side: Orbit Canvas with Circle and 3D Cards */
+    /* Right Side: Big Orbit Canvas with Circle and 3D Cards */
     .hero-orbit-canvas {
       position: relative;
       width: 100%;
-      height: 320px;
+      height: 330px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -398,9 +478,7 @@
       cursor: pointer;
       user-select: none;
     }
-    /* 3 Visible Deck Slots */
     .deck-slot-0 {
-      /* Front Active Card */
       z-index: 10;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -410,7 +488,6 @@
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
     }
     .deck-slot-1 {
-      /* Middle Peeking Card (Burnt Orange) */
       z-index: 5;
       background: var(--color-orange);
       color: #fff;
@@ -419,7 +496,6 @@
       opacity: 0.95;
     }
     .deck-slot-2 {
-      /* Back Peeking Card (Warm Amber Yellow) */
       z-index: 2;
       background: var(--color-yellow);
       color: #1c1917;
@@ -456,65 +532,53 @@
       width: 20px;
     }
 
-    /* Location Detection & City Selector Strip */
-    .location-strip {
-      max-width: 1140px;
-      margin: 0 auto 1.25rem;
-      padding: 0 1.25rem;
+    /* Two Core Pillars Section on Homepage */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin: 1.5rem 0 2rem;
     }
-    .location-bar {
-      background: var(--surface-subtle);
+    @media (max-width: 768px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+    }
+    .pillar-card {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 0.65rem 1rem;
+      border-radius: 16px;
+      padding: 1.5rem;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+      flex-direction: column;
       justify-content: space-between;
-      gap: 0.75rem;
+      gap: 1rem;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
-    .location-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .pillar-card:hover {
+      transform: translateY(-2px);
+      border-color: #cbd5e1;
+    }
+    .pillar-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+      color: var(--color-blue);
+    }
+    .pillar-title {
+      font-size: 1.22rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: var(--text);
+    }
+    .pillar-desc {
       font-size: 0.88rem;
-      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1.5;
     }
-    .location-right {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .city-select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.35rem 0.65rem;
-      font-size: 0.82rem;
-      font-family: inherit;
-      color: var(--text);
-      cursor: pointer;
-      outline: none;
-    }
-    .btn-detect {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.35rem 0.65rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: background 0.15s ease;
-    }
-    .btn-detect:hover { background: var(--surface-hover); }
 
-    /* ==========================================================================
-       Page Sections / Separate Views
-       ========================================================================== */
+    /* Page Container */
     .page-container {
       max-width: 1140px;
       margin: 0 auto;
@@ -726,7 +790,7 @@
       cursor: pointer;
     }
 
-    /* Radar Scanning Animation for Near Me */
+    /* Radar Banner for Near Me */
     .radar-banner {
       background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(59, 130, 246, 0.08));
       border: 1px solid var(--border);
@@ -739,8 +803,8 @@
     }
     .radar-circle {
       position: relative;
-      width: 64px;
-      height: 64px;
+      width: 60px;
+      height: 60px;
       border-radius: 9999px;
       background: rgba(249, 115, 22, 0.15);
       display: flex;
@@ -759,6 +823,107 @@
     @keyframes radarPulse {
       0% { transform: scale(0.6); opacity: 1; }
       100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Bots Page (Carl.gg / Top.gg Inspired) */
+    .bots-hero {
+      text-align: center;
+      max-width: 760px;
+      margin: 1.5rem auto 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      align-items: center;
+    }
+    .bots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .bot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.25rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .bot-card-discord { border-top: 4px solid var(--color-discord); }
+    .bot-card-telegram { border-top: 4px solid var(--color-telegram); }
+    .bot-card-whatsapp { border-top: 4px solid var(--color-whatsapp); }
+
+    .bot-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .bot-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.4rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .bot-features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.86rem;
+      color: var(--text-sub);
+    }
+    .bot-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bot-feature-item span:first-child {
+      color: var(--color-green);
+      font-weight: 700;
+    }
+
+    /* Discord Embed Mockup */
+    .discord-mockup {
+      background: #2b2d31;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border-left: 4px solid var(--color-green);
+      color: #dcddde;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 1rem 0;
+      max-width: 600px;
+    }
+    .discord-author {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #f2f3f5;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .discord-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #00a8fc;
+      margin-bottom: 0.5rem;
+    }
+    .discord-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
     }
 
     /* OSINT Tools Grid */
@@ -788,6 +953,36 @@
       border-radius: 8px;
       color: var(--color-blue);
       word-break: break-all;
+    }
+
+    /* Setup Steps Grid (Carl.gg style) */
+    .setup-steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin: 2rem 0;
+    }
+    .setup-step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .setup-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--color-orange);
+      margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
     }
 
     /* Modal */
