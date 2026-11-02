@@ -2,7 +2,7 @@
 -- Schema v1 (Phase 1 Foundation). Compatible with Cloudflare D1 and local SQLite.
 -- All timestamps are ISO-8601 TEXT. Booleans are INTEGER 0/1.
 
-PRAGMA journal_mode = WAL;
+-- PRAGMA journal_mode = WAL;
 
 -- Organizers (spec 59)
 CREATE TABLE IF NOT EXISTS organizers (
