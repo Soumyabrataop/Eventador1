@@ -1,10 +1,10 @@
 name: scheduled-loop
 on:
-  schedule:
-    # Discovery fan-out every 6 hours (free-tier friendly; tighten after D1 sizing).
-    - cron: "0 */6 * * *"
-    # Daily maintenance + reminders.
-    - cron: "30 2 * * *"
+  # Cron disabled in GitHub Actions to prevent runner email spam.
+  # Discovery and verification run 24/7 on Oracle Cloud Always Free VPS.
+  # schedule:
+  #   - cron: "0 */6 * * *"
+  #   - cron: "30 2 * * *"
   workflow_dispatch:
 
 jobs:
