@@ -92,7 +92,7 @@ export default {
 
     // 2. Web Portal Redirect (Static UI hosted on Cloudflare Pages to preserve Worker limits)
     if (url.pathname === "/" || url.pathname === "/index.html") {
-      return Response.redirect("https://app-eventador.pages.dev", 302);
+      return Response.redirect("https://eventadorapp.pages.dev/", 302);
     }
 
     // 3. Filterable Events API

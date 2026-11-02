@@ -121,7 +121,7 @@ describe("worker entrypoint (Phase 8)", () => {
   it("redirects / to Cloudflare Pages static web portal", async () => {
     const res = await worker.fetch(new Request("https://x.example/"), { DB: createFakeD1(openDatabase(":memory:")) } as Env);
     assert.equal(res.status, 302);
-    assert.equal(res.headers.get("location"), "https://app-eventador.pages.dev/");
+    assert.equal(res.headers.get("location"), "https://eventadorapp.pages.dev/");
 
 
 
