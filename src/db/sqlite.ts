@@ -47,6 +47,16 @@ export function migrate(db: DatabaseSync): number {
   if (!cols.some((c) => c.name === "filter")) {
     db.exec("ALTER TABLE notification_targets ADD COLUMN filter TEXT");
   }
+  const eventCols = db.prepare("PRAGMA table_info(events)").all() as Array<{ name: string }>;
+  if (!eventCols.some((c) => c.name === "event_type")) {
+    db.exec("ALTER TABLE events ADD COLUMN event_type TEXT DEFAULT 'HACKATHON'");
+  }
+  if (!eventCols.some((c) => c.name === "is_free")) {
+    db.exec("ALTER TABLE events ADD COLUMN is_free INTEGER NOT NULL DEFAULT 1");
+  }
+  if (!eventCols.some((c) => c.name === "price_detail")) {
+    db.exec("ALTER TABLE events ADD COLUMN price_detail TEXT");
+  }
   const row = db.prepare("SELECT MAX(version) AS v FROM schema_version").get() as { v: number };
   return row.v ?? 1;
 }

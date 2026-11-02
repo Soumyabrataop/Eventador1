@@ -30,6 +30,14 @@ export type RegistrationStatus =
 
 export type EventFormat = "ONLINE" | "OFFLINE" | "HYBRID" | "UNKNOWN";
 
+export type EventType =
+  | "HACKATHON"
+  | "MEETUP"
+  | "CONFERENCE"
+  | "WORKSHOP"
+  | "COMPETITION"
+  | "COMMUNITY";
+
 export type VerificationDecision =
   | "VERIFIED_OFFICIAL"
   | "VERIFIED_BY_MULTIPLE_SOURCES"
@@ -84,6 +92,9 @@ export type LinkVerificationStatus =
 export type EventCategory =
   | "Hackathon"
   | "Coding Competition"
+  | "Meetup"
+  | "Conference"
+  | "Workshop"
   | "AI/ML"
   | "Cybersecurity"
   | "Web Development"
@@ -138,6 +149,9 @@ export interface EventRecord {
   description: string | null;
   categories: string | null; // JSON array of EventCategory
   format: EventFormat;
+  event_type?: EventType;
+  is_free?: number; // 1 = Free, 0 = Paid
+  price_detail?: string | null;
   country: string | null;
   state: string | null;
   city: string | null; // normalized
@@ -246,6 +260,9 @@ export interface AIExtraction {
   registration_url: string | null;
   event_url: string | null;
   confidence: number;
+  event_type_tag?: EventType | null;
+  is_free?: number | null;
+  price_detail?: string | null;
 }
 
 export type FieldPresence = "FOUND" | "NOT_FOUND" | "AMBIGUOUS";

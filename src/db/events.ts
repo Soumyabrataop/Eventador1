@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { dedupeKey } from "../normalize/dedup.js";
 import { normalizeUrl } from "../normalize/url.js";
 import type { Store } from "./store.js";
-import type { EventFormat } from "../types.js";
+import type { EventFormat, EventType } from "../types.js";
 
 export interface DiscoveredEventInput {
   title: string;
@@ -19,6 +19,9 @@ export interface DiscoveredEventInput {
   description: string | null;
   format: EventFormat | null;
   categories: string[] | null;
+  eventType?: EventType | null;
+  isFree?: number | null;
+  priceDetail?: string | null;
 }
 
 export function computeDedupeKey(input: DiscoveredEventInput): string {
@@ -47,8 +50,8 @@ export async function insertDiscoveredEvent(
   const key = computeDedupeKey(input);
   await store.exec(
     `INSERT INTO events(event_id,title,normalized_title,organizer_name,description,categories,format,
-      start_date,event_url,registration_url,status,verification_score,dedupe_key,first_seen,last_seen)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      start_date,event_url,registration_url,event_type,is_free,price_detail,status,verification_score,dedupe_key,first_seen,last_seen)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     eventId,
     input.title,
     input.title.toLowerCase().slice(0, 512),
@@ -59,6 +62,9 @@ export async function insertDiscoveredEvent(
     input.startDate,
     input.eventUrl,
     input.registrationUrl,
+    input.eventType ?? "HACKATHON",
+    input.isFree ?? 1,
+    input.priceDetail ?? "Free",
     "DISCOVERED",
     0,
     key,

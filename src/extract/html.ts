@@ -8,7 +8,7 @@
  */
 import { sanitizeUntrustedText } from "./sanitize.js";
 import { registrableDomainOf } from "../normalize/url.js";
-import type { AIExtraction, EventFormat } from "../types.js";
+import type { AIExtraction, EventFormat, EventType } from "../types.js";
 
 export interface ExtractedPage extends AIExtraction {
   links: string[]; // absolute http(s) hrefs found on the page (unverified)
@@ -90,6 +90,9 @@ interface JsonLdEvent {
   organizer?: unknown;
   location?: unknown;
   url?: unknown;
+  isAccessibleForFree?: unknown;
+  offers?: unknown;
+  "@type"?: unknown;
 }
 
 function jsonLdEvents(html: string): JsonLdEvent[] {
@@ -163,6 +166,48 @@ function guessFormat(location: string | null, text: string): EventFormat | null 
   return null;
 }
 
+function guessEventType(title: string | null, text: string, jsonLdType?: unknown): EventType {
+  const hay = `${title ?? ""} ${text}`.toLowerCase();
+  if (/meetup|user group|community gathering|chapter meeting|tech meetup/i.test(hay)) return "MEETUP";
+  if (/workshop|bootcamp|hands-on|masterclass|tutorial|training/i.test(hay)) return "WORKSHOP";
+  if (/conference|summit|symposium|con 202|conf 202/i.test(hay)) return "CONFERENCE";
+  if (/hackathon|hackfest|codefest|ideathon|datathon|buildathon/i.test(hay)) return "HACKATHON";
+  if (/competition|challenge|contest/i.test(hay)) return "COMPETITION";
+  return "HACKATHON";
+}
+
+function guessPricing(e: JsonLdEvent | undefined, text: string): { isFree: number; priceDetail: string | null } {
+  if (e) {
+    if (e.isAccessibleForFree === true) return { isFree: 1, priceDetail: "Free" };
+    if (e.isAccessibleForFree === false) return { isFree: 0, priceDetail: "Paid" };
+    if (typeof e.offers === "object" && e.offers !== null) {
+      const offer = e.offers as { price?: unknown; priceCurrency?: unknown };
+      const p = offer.price;
+      if (p === 0 || p === "0" || p === "0.00" || p === "Free" || p === "free") {
+        return { isFree: 1, priceDetail: "Free" };
+      }
+      if (typeof p === "number" && p > 0) {
+        return { isFree: 0, priceDetail: `${offer.priceCurrency ?? "₹"} ${p}` };
+      }
+      if (typeof p === "string" && Number(p) > 0) {
+        return { isFree: 0, priceDetail: `${offer.priceCurrency ?? "₹"} ${p}` };
+      }
+    }
+  }
+  const hay = text.toLowerCase();
+  if (/free of cost|free registration|free entry|entry free|100% free|no registration fee|free to attend/i.test(hay)) {
+    return { isFree: 1, priceDetail: "Free" };
+  }
+  const ticketMatch = /(?:tickets?|registration fee|entry fee):\s*(?:₹|\$|rs\.?)\s*(\d+)/i.exec(hay);
+  if (ticketMatch && Number(ticketMatch[1]) > 0) {
+    return { isFree: 0, priceDetail: `₹${ticketMatch[1]}` };
+  }
+  if (/paid event|ticket required|buy tickets|paid registration/i.test(hay)) {
+    return { isFree: 0, priceDetail: "Paid" };
+  }
+  return { isFree: 1, priceDetail: "Free" };
+}
+
 /** Extract event fields from raw HTML. `pageUrl` is used for link resolution. */
 export function extractEventFromHtml(html: string, pageUrl: string): ExtractedPage {
   const flagDetails: string[] = [];
@@ -211,11 +256,16 @@ export function extractEventFromHtml(html: string, pageUrl: string): ExtractedPa
 
   const location = e ? locationOf(e.location) : null;
   const bodyText = safe.replace(/<[^>]*>/g, " ").slice(0, 5000);
+  const pricing = guessPricing(e, bodyText);
+  const eventTypeTag = guessEventType(rawTitle, bodyText, e?.["@type"]);
 
   return {
     title: clean(rawTitle),
     organizer: e ? clean(organizerNameOf(e.organizer)) : null,
     event_type: [],
+    event_type_tag: eventTypeTag,
+    is_free: pricing.isFree,
+    price_detail: pricing.priceDetail,
     format: guessFormat(location, bodyText),
     start_date: e ? dateOrNull(e.startDate) : null,
     end_date: e ? dateOrNull(e.endDate) : null,

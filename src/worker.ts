@@ -1,12 +1,10 @@
 /**
- * Cloudflare Worker entrypoint (Phase 8). Cron triggers run the same
- * runLoopStages pipeline as the Node CLI, backed by D1 instead of SQLite.
- *
- * Setup:
- *   wrangler d1 create india-events
- *   wrangler d1 execute india-events --file=src/db/schema.sql
- *   wrangler secret put TELEGRAM_BOT_TOKEN
- * Cron (wrangler.toml): every 30 min = standard loop, 02:00 = maintenance loop.
+ * Cloudflare Worker entrypoint (Phase 8). Serves:
+ * - / : Interactive Eventador Web Portal & Discovery Frontend
+ * - /api/events : Filterable JSON API for tech events, meetups & hackathons
+ * - /health : Health check
+ * - /telegram-webhook : Admin bot webhook
+ * - Cron triggers run the runLoopStages automation pipeline backed by D1.
  */
 
 import { createD1Store, type D1Like } from "./db/d1Store.js";
@@ -30,6 +28,7 @@ export interface Env {
   WHATSAPP_TO_NUMBER?: string;
   VERIFY_LIMIT?: string;
   LINK_LIMIT?: string;
+  SYNC_SECRET?: string;
 }
 
 const MAINTENANCE_CRON = "0 2 * * *";
@@ -75,12 +74,129 @@ async function loadTargets(env: Env): Promise<ChannelTarget[]> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+
+    // 1. Health check
     if (url.pathname === "/health") {
       return Response.json({ ok: true, name: "Eventador", phase: 8, dryRun: env.DRY_RUN ?? "true" });
     }
+
+    // 2. Interactive Web Portal
+    if (url.pathname === "/" || url.pathname === "/index.html") {
+      const { renderWebPage } = await import("./web/app.js");
+      return new Response(renderWebPage(), {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, max-age=300",
+        },
+      });
+    }
+
+    // 3. Filterable Events API
+    if (url.pathname === "/api/events") {
+      try {
+        const store = createD1Store(env.DB);
+        const format = url.searchParams.get("format");
+        const type = url.searchParams.get("type");
+        const isFree = url.searchParams.get("is_free");
+        const city = url.searchParams.get("city");
+        const search = url.searchParams.get("search");
+
+        let sql = `SELECT event_id,title,organizer_name,categories,format,city,venue,timezone,
+                          start_date,end_date,registration_deadline,registration_status,
+                          event_url,registration_url,event_type,is_free,price_detail,
+                          verification_decision,verification_score,publishing_tier,prize
+                   FROM events
+                   WHERE status IN ('VERIFIED','PUBLISHED','UPDATED')`;
+        const params: unknown[] = [];
+
+        if (format && format !== "ALL") {
+          sql += " AND format = ?";
+          params.push(format);
+        }
+        if (type && type !== "ALL") {
+          sql += " AND event_type = ?";
+          params.push(type);
+        }
+        if (isFree !== null && isFree !== "ALL") {
+          sql += " AND is_free = ?";
+          params.push(Number(isFree));
+        }
+        if (city && city !== "ALL") {
+          sql += " AND (city LIKE ? OR city_original LIKE ?)";
+          params.push(`%${city}%`, `%${city}%`);
+        }
+        if (search) {
+          sql += " AND (title LIKE ? OR description LIKE ? OR organizer_name LIKE ?)";
+          params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+        }
+
+        sql += " ORDER BY start_date ASC LIMIT 100";
+        const events = await store.query(sql, ...params);
+        return Response.json({ ok: true, count: events.length, events });
+      } catch (e) {
+        return Response.json({ ok: false, error: e instanceof Error ? e.message : "QUERY_FAILED" }, { status: 500 });
+      }
+    }
+
+    // 3b. Event Ingestion API (for Oracle VPS -> Cloudflare D1 synchronization)
+    if (url.pathname === "/api/events/ingest" && request.method === "POST") {
+      const auth = request.headers.get("x-sync-secret") ?? "";
+      const expected = env.SYNC_SECRET ?? "";
+      if (!expected || !timingSafeEqual(auth, expected)) {
+        return Response.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+      }
+      try {
+        const body = (await request.json().catch(() => null)) as { events?: any[] };
+        if (!body || !Array.isArray(body.events)) {
+          return Response.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
+        }
+        const store = createD1Store(env.DB);
+        let inserted = 0;
+        for (const ev of body.events) {
+          if (!ev.event_id || !ev.title) continue;
+          await store.exec(
+            `INSERT OR REPLACE INTO events(
+              event_id, title, normalized_title, organizer_name, categories, format, city, venue, timezone,
+              start_date, end_date, registration_deadline, registration_status,
+              event_url, registration_url, event_type, is_free, price_detail,
+              verification_decision, verification_score, publishing_tier, prize, status, first_seen, last_seen
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ev.event_id,
+            ev.title,
+            ev.normalized_title ?? ev.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(),
+            ev.organizer_name ?? null,
+            typeof ev.categories === "string" ? ev.categories : JSON.stringify(ev.categories ?? []),
+            ev.format ?? "ONLINE",
+            ev.city ?? null,
+            ev.venue ?? null,
+            ev.timezone ?? "UTC",
+            ev.start_date,
+            ev.end_date ?? null,
+            ev.registration_deadline ?? null,
+            ev.registration_status ?? "OPEN",
+            ev.event_url,
+            ev.registration_url ?? null,
+            ev.event_type ?? "HACKATHON",
+            ev.is_free ?? 1,
+            ev.price_detail ?? null,
+            ev.verification_decision ?? "VERIFIED",
+            ev.verification_score ?? 80,
+            ev.publishing_tier ?? "STANDARD",
+            ev.prize ?? null,
+            ev.status ?? "VERIFIED",
+            ev.first_seen ?? new Date().toISOString(),
+            ev.last_seen ?? new Date().toISOString()
+          );
+          inserted++;
+        }
+        return Response.json({ ok: true, inserted });
+      } catch (e) {
+        return Response.json({ ok: false, error: e instanceof Error ? e.message : "INGEST_FAILED" }, { status: 500 });
+      }
+    }
+
+    // 4. Telegram Admin Webhook
     if (url.pathname === "/telegram-webhook" && request.method === "POST") {
-      // Optional shared-secret check (set Telegram webhook with ?secret or
-      // secret_token header; both are compared in constant time below).
       if (env.TELEGRAM_WEBHOOK_SECRET) {
         const got = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
         if (!timingSafeEqual(got, env.TELEGRAM_WEBHOOK_SECRET)) {
@@ -105,7 +221,8 @@ export default {
       }
       return Response.json({ ok: true });
     }
-    return Response.json({ ok: false, error: "See /health. Pipeline runs on cron." }, { status: 503 });
+
+    return Response.json({ ok: false, error: "Not found. Visit / for Eventador Web Portal or /health." }, { status: 404 });
   },
 
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
@@ -114,28 +231,26 @@ export default {
     const store = createD1Store(env.DB);
     try {
       const report = await runLoopStages(store, {
-      connectors: MVP_SOURCES.filter((s) => s.enabled).map((s) => buildConnector(s)),
-      targets: await loadTargets(env),
-      verifyLimit: Number(env.VERIFY_LIMIT ?? 10),
-      linkLimit: Number(env.LINK_LIMIT ?? 50),
-      dryRun,
-      threatIntel: providerFromEnv(),
-      telegramBotToken: env.TELEGRAM_BOT_TOKEN ?? null,
-      whatsapp: env.WHATSAPP_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID
-        ? {
-          token: env.WHATSAPP_TOKEN,
-          phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID,
-          templateName: env.WHATSAPP_TEMPLATE_NAME || undefined,
-        }
-        : null,
-      stages: maintenanceOnly
-        ? { discovery: false, verification: false, linkHealth: true, reminders: true, maintenance: true, notify: true }
-        : undefined,
-    });
+        connectors: MVP_SOURCES.filter((s) => s.enabled).map((s) => buildConnector(s)),
+        targets: await loadTargets(env),
+        verifyLimit: Number(env.VERIFY_LIMIT ?? 10),
+        linkLimit: Number(env.LINK_LIMIT ?? 50),
+        dryRun,
+        threatIntel: providerFromEnv(),
+        telegramBotToken: env.TELEGRAM_BOT_TOKEN ?? null,
+        whatsapp: env.WHATSAPP_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID
+          ? {
+              token: env.WHATSAPP_TOKEN,
+              phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID,
+              templateName: env.WHATSAPP_TEMPLATE_NAME || undefined,
+            }
+          : null,
+        stages: maintenanceOnly
+          ? { discovery: false, verification: false, linkHealth: true, reminders: true, maintenance: true, notify: true }
+          : undefined,
+      });
       console.log(JSON.stringify({ cron: event.cron, ...report }));
     } catch (e) {
-      // Never fail silently: stage errors are logged for the next run.
-      // (Ensure D1 is migrated first — see wrangler.toml runbook.)
       console.log(JSON.stringify({ cron: event.cron, ok: false, error: e instanceof Error ? e.message : "SCHEDULED_FAILED" }));
     }
   },

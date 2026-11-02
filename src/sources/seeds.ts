@@ -37,6 +37,9 @@ export const MVP_SOURCES: SourceSeed[] = [
   { slug: "kaggle", kind: "sitemap", sourceType: "PLATFORM", level: 5, baseUrl: "https://www.kaggle.com", trustScore: 65, enabled: true, rateLimitMs: SLOW, maxPages: 10 },
   { slug: "townscript", kind: "sitemap", sourceType: "PLATFORM", level: 5, baseUrl: "https://www.townscript.com", trustScore: 55, enabled: true, rateLimitMs: SLOW, maxPages: 10 },
   { slug: "allevents", kind: "sitemap", sourceType: "PLATFORM", level: 5, baseUrl: "https://allevents.in", trustScore: 50, enabled: true, rateLimitMs: SLOW, maxPages: 10 },
+  { slug: "luma", kind: "sitemap", sourceType: "PLATFORM", level: 5, baseUrl: "https://lu.ma", trustScore: 65, enabled: true, rateLimitMs: MEDIUM, maxPages: 10 },
+  { slug: "meetup", kind: "sitemap", sourceType: "PLATFORM", level: 5, baseUrl: "https://www.meetup.com", trustScore: 60, enabled: true, rateLimitMs: SLOW, maxPages: 10 },
+  { slug: "eventbrite", kind: "sitemap", sourceType: "PLATFORM", level: 5, baseUrl: "https://www.eventbrite.com", trustScore: 55, enabled: true, rateLimitMs: SLOW, maxPages: 10 },
 
   // ---- Indian institutions (L3) ----
   { slug: "iit-bombay", kind: "sitemap", sourceType: "UNIVERSITY", level: 3, baseUrl: "https://www.iitb.ac.in", trustScore: 85, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
@@ -61,6 +64,13 @@ export const MVP_SOURCES: SourceSeed[] = [
   { slug: "sih", kind: "sitemap", sourceType: "GOVERNMENT", level: 3, baseUrl: "https://www.sih.gov.in", trustScore: 80, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
   { slug: "mygov-innovate", kind: "sitemap", sourceType: "GOVERNMENT", level: 3, baseUrl: "https://innovateindia.mygov.in", trustScore: 75, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
   { slug: "startup-india", kind: "sitemap", sourceType: "GOVERNMENT", level: 3, baseUrl: "https://www.startupindia.gov.in", trustScore: 75, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
+
+  // ---- Big Tech Developer Programs & Open Source (L3) ----
+  { slug: "aws-events", kind: "sitemap", sourceType: "COMPANY", level: 3, baseUrl: "https://aws.amazon.com", trustScore: 85, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
+  { slug: "google-dev", kind: "sitemap", sourceType: "COMPANY", level: 3, baseUrl: "https://developers.google.com", trustScore: 85, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
+  { slug: "microsoft-events", kind: "sitemap", sourceType: "COMPANY", level: 3, baseUrl: "https://developer.microsoft.com", trustScore: 85, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
+  { slug: "oracle-dev", kind: "sitemap", sourceType: "COMPANY", level: 3, baseUrl: "https://developer.oracle.com", trustScore: 85, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
+  { slug: "hacktoberfest", kind: "sitemap", sourceType: "COMMUNITY", level: 3, baseUrl: "https://hacktoberfest.com", trustScore: 80, enabled: true, rateLimitMs: SLOW, maxPages: 8 },
 
   // ---- Community / Social Feeds (L6, public RSS) ----
   { slug: "reddit-hackathons", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/hackathons", feedUrl: "https://www.reddit.com/r/hackathons/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },

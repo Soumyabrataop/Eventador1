@@ -118,6 +118,66 @@ describe("worker entrypoint (Phase 8)", () => {
     assert.equal(body.ok, true);
   });
 
+  it("serves / Web Portal with HTML content", async () => {
+    const res = await worker.fetch(new Request("https://x.example/"), { DB: createFakeD1(openDatabase(":memory:")) } as Env);
+    assert.equal(res.status, 200);
+    assert.ok(res.headers.get("content-type")?.includes("text/html"));
+    const html = await res.text();
+    assert.ok(html.includes("Eventador"));
+    assert.ok(html.includes("Discover Verified"));
+  });
+
+  it("serves /api/events with filters and results", async () => {
+    const d1Db = openDatabase(":memory:");
+    migrate(d1Db);
+    const fakeD1 = createFakeD1(d1Db);
+    d1Db.prepare(`INSERT INTO events(event_id,title,normalized_title,format,event_type,is_free,status,verification_score,first_seen,last_seen)
+      VALUES ('evt-1','AI Hackathon','ai hackathon','ONLINE','HACKATHON',1,'VERIFIED',90,'2026-11-01T00:00:00Z','2026-11-01T00:00:00Z')`).run();
+    d1Db.prepare(`INSERT INTO events(event_id,title,normalized_title,format,event_type,is_free,city,status,verification_score,first_seen,last_seen)
+      VALUES ('evt-2','Cloud Meetup','cloud meetup','OFFLINE','MEETUP',0,'Bengaluru','VERIFIED',85,'2026-11-02T00:00:00Z','2026-11-02T00:00:00Z')`).run();
+
+    const res = await worker.fetch(new Request("https://x.example/api/events?format=ONLINE&type=HACKATHON&is_free=1"), { DB: fakeD1 } as Env);
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { ok: boolean; count: number; events: Array<{ title: string }> };
+    assert.equal(body.ok, true);
+    assert.equal(body.count, 1);
+    assert.equal(body.events[0]?.title, "AI Hackathon");
+    d1Db.close();
+  });
+
+  it("authenticates and ingests events via /api/events/ingest", async () => {
+    const d1Db = openDatabase(":memory:");
+    migrate(d1Db);
+    const fakeD1 = createFakeD1(d1Db);
+    const env = { DB: fakeD1, SYNC_SECRET: "secret-123" } as Env;
+
+    const unauth = await worker.fetch(new Request("https://x.example/api/events/ingest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-sync-secret": "wrong" },
+      body: JSON.stringify({ events: [] }),
+    }), env);
+    assert.equal(unauth.status, 401);
+
+    const auth = await worker.fetch(new Request("https://x.example/api/events/ingest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-sync-secret": "secret-123" },
+      body: JSON.stringify({
+        events: [{
+          event_id: "ingest-1",
+          title: "Ingested Hackathon",
+          event_url: "https://example.com/ingest-1",
+          start_date: "2026-12-01T00:00:00Z",
+          status: "VERIFIED",
+        }],
+      }),
+    }), env);
+    assert.equal(auth.status, 200);
+    const body = (await auth.json()) as { ok: boolean; inserted: number };
+    assert.equal(body.ok, true);
+    assert.equal(body.inserted, 1);
+    d1Db.close();
+  });
+
   it("scheduled dry-run completes offline with stubbed fetch", async () => {
     const d1Db = openDatabase(":memory:");
     migrate(d1Db);

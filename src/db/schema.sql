@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS events (
   description TEXT,
   categories TEXT, -- JSON array
   format TEXT NOT NULL DEFAULT 'UNKNOWN',
+  event_type TEXT NOT NULL DEFAULT 'HACKATHON',
+  is_free INTEGER NOT NULL DEFAULT 1,
+  price_detail TEXT,
   country TEXT,
   state TEXT,
   city TEXT,
@@ -67,6 +70,8 @@ CREATE INDEX IF NOT EXISTS idx_events_dedupe ON events(dedupe_key);
 CREATE INDEX IF NOT EXISTS idx_events_deadline ON events(registration_deadline);
 CREATE INDEX IF NOT EXISTS idx_events_start ON events(start_date);
 CREATE INDEX IF NOT EXISTS idx_events_score ON events(verification_score);
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
+CREATE INDEX IF NOT EXISTS idx_events_free ON events(is_free);
 
 -- Event sources (many-to-one provenance, spec 47)
 CREATE TABLE IF NOT EXISTS event_sources (
