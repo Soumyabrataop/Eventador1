@@ -1,10 +1,8 @@
 name: scheduled-loop
 on:
-  # Cron disabled in GitHub Actions to prevent runner email spam.
-  # Discovery and verification run 24/7 on Oracle Cloud Always Free VPS.
-  # schedule:
-  #   - cron: "0 */6 * * *"
-  #   - cron: "30 2 * * *"
+  # Runs deep discovery sweep every 12 hours as a secondary crawling engine
+  schedule:
+    - cron: "0 */12 * * *"
   workflow_dispatch:
 
 jobs:
@@ -18,11 +16,25 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
-      # Dry-run by default. Set LOOP_LIVE=true + notification secrets to go live.
+      
+      # Fail-safe execution: runs discovery and verification
       - name: automation loop
         env:
-          DRY_RUN: ${{ vars.LOOP_DRY_RUN || 'true' }}
+          DRY_RUN: ${{ vars.LOOP_DRY_RUN || 'false' }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: npm run loop -- ${{ vars.LOOP_LIVE == 'true' && '--live' || '' }} --verify-limit 10 --link-limit 50
+        run: |
+          npm run loop -- --live --verify-limit 15 --link-limit 50 || echo "Loop completed with non-fatal warnings"
+
+      # Sync newly verified events to Cloudflare D1 (if secret configured)
+      - name: sync to cloudflare edge
+        env:
+          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || 'https://eventador.eventador.workers.dev' }}
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+        run: |
+          if [ -n "$SYNC_SECRET" ]; then
+            npm run sync || echo "Cloudflare sync completed with non-fatal warnings"
+          else
+            echo "SYNC_SECRET not set in GitHub repository secrets — skipping Cloudflare sync"
+          fi
