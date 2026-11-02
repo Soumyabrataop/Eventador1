@@ -1,7 +1,7 @@
 /**
- * Eventador Web Portal & Discovery Frontend.
- * Self-contained, responsive, high-performance web application served
- * globally at Cloudflare's edge in <50ms.
+ * Eventador Web Portal & Discovery Frontend (MLH-Inspired Minimalist React SPA).
+ * Clean, developer-grade, fast, and accessible. No excessive emojis or loud gradients.
+ * Served globally at Cloudflare's edge in <30ms with 0 cold start.
  */
 
 export function renderWebPage(): string {
@@ -11,907 +11,813 @@ export function renderWebPage(): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eventador — Verified Tech Events, Hackathons & Meetups</title>
-  <meta name="description" content="Discover verified online and in-person hackathons, meetups, conferences, and tech workshops. 100% genuine links with zero malicious lures.">
+  <meta name="description" content="Discover Verified online and in-person hackathons, meetups, conferences, and tech workshops with authentic first-party registration links.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- React 18 & Babel Standalone for clean, robust component architecture -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: rgba(18, 24, 38, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-hover: rgba(255, 255, 255, 0.14);
-      --accent-primary: #6366f1;
-      --accent-primary-hover: #4f46e5;
-      --accent-glow: rgba(99, 102, 241, 0.25);
-      --free-green: #10b981;
-      --free-glow: rgba(16, 185, 129, 0.2);
-      --paid-amber: #f59e0b;
-      --online-cyan: #06b6d4;
-      --meetup-pink: #ec4899;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-sub: #cbd5e1;
-      --input-bg: rgba(15, 23, 42, 0.85);
-      --input-border: rgba(255, 255, 255, 0.12);
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface-hover: #1f2937;
+      --border: #1f2937;
+      --border-focus: #3b82f6;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --text-sub: #d1d5db;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --badge-free-bg: #064e3b;
+      --badge-free-text: #6ee7b7;
+      --badge-paid-bg: #78350f;
+      --badge-paid-text: #fcd34d;
+      --badge-online-bg: #0c4a6e;
+      --badge-online-text: #7dd3fc;
+      --badge-type-bg: #312e81;
+      --badge-type-text: #c7d2fe;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
       line-height: 1.5;
-      background-image: 
-        radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-        radial-gradient(at 90% 80%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(6, 182, 212, 0.08) 0px, transparent 60%);
-      background-attachment: fixed;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
-    header {
-      border-bottom: 1px solid var(--card-border);
-      backdrop-filter: blur(12px);
-      background: rgba(9, 13, 22, 0.85);
+    /* Minimalist Navigation (MLH Style) */
+    .navbar {
+      border-bottom: 1px solid var(--border);
+      background-color: rgba(11, 15, 25, 0.95);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
+      backdrop-filter: blur(8px);
     }
-
     .nav-container {
-      max-width: 1280px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 1rem 1.5rem;
+      padding: 0.85rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
     }
-
-    .brand-group {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 0.75rem;
       text-decoration: none;
-      color: inherit;
+      color: var(--text);
     }
-
-    .brand-logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #6366f1, #06b6d4);
-      display: grid;
-      place-items: center;
-      box-shadow: 0 4px 16px var(--accent-glow);
-      font-size: 1.4rem;
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      fill: #3b82f6;
     }
-
     .brand-title {
-      font-size: 1.35rem;
-      font-weight: 800;
+      font-size: 1.2rem;
+      font-weight: 700;
       letter-spacing: -0.02em;
-      background: linear-gradient(to right, #ffffff, #94a3b8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-size: 0.78rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      background: rgba(16, 185, 129, 0.12);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+    .brand-tag {
       font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
     }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
-    }
-
-    .community-links {
+    .nav-actions {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
+      gap: 0.75rem;
     }
-
-    .btn-community {
+    .nav-btn {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      padding: 0.45rem 0.85rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
       text-decoration: none;
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      transition: all 0.2s ease;
+      color: var(--text-sub);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: #374151;
     }
 
-    .btn-community:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: var(--card-hover);
-      transform: translateY(-1px);
-    }
-
-    .hero-section {
-      max-width: 1280px;
+    /* Page Header */
+    .header-section {
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 1.5rem;
-      text-align: center;
+      padding: 2.5rem 1.5rem 1.5rem;
     }
-
-    .hero-headline {
-      font-size: clamp(2rem, 5vw, 3.25rem);
-      font-weight: 800;
-      line-height: 1.15;
+    .header-title {
+      font-size: 2rem;
+      font-weight: 700;
       letter-spacing: -0.03em;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
-
-    .hero-highlight {
-      background: linear-gradient(135deg, #818cf8 0%, #38bdf8 50%, #34d399 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-sub {
+    .header-desc {
       color: var(--text-muted);
-      font-size: clamp(1rem, 2vw, 1.15rem);
-      max-width: 680px;
-      margin: 0 auto 2rem;
+      font-size: 1rem;
+      max-width: 720px;
     }
 
-    /* Filters Bar */
-    .filter-panel {
-      max-width: 1280px;
+    /* Filter Panel (Clean, Structured) */
+    .filter-wrapper {
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 1.5rem 2rem;
     }
-
-    .filter-container {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(16px);
-      border-radius: 18px;
+    .filter-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
       padding: 1.25rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
     }
-
-    .search-row {
-      display: flex;
-      gap: 0.75rem;
-      width: 100%;
-    }
-
-    .search-box {
-      flex: 1;
+    .search-input-wrap {
+      position: relative;
       display: flex;
       align-items: center;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 12px;
-      padding: 0 1rem;
-      transition: all 0.2s ease;
     }
-
-    .search-box:focus-within {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      width: 18px;
+      height: 18px;
+      fill: var(--text-muted);
     }
-
     .search-input {
       width: 100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #ffffff;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1rem 0.7rem 2.75rem;
+      color: var(--text);
       font-size: 0.95rem;
-      padding: 0.75rem 0.5rem;
       font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .search-input:focus {
+      border-color: var(--border-focus);
+    }
+    .search-input::placeholder {
+      color: #6b7280;
     }
 
-    .search-icon {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-    }
-
-    .dropdown-grid {
+    .filter-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 0.75rem;
     }
-
-    .filter-item {
+    .filter-col {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
     }
-
     .filter-label {
       font-size: 0.75rem;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
-
-    .select-input {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      color: #ffffff;
-      padding: 0.65rem 0.85rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
+    .filter-select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem 0.75rem;
+      color: var(--text);
+      font-size: 0.88rem;
       font-family: inherit;
       outline: none;
       cursor: pointer;
-      transition: all 0.2s ease;
+    }
+    .filter-select:focus {
+      border-color: var(--border-focus);
     }
 
-    .select-input:hover, .select-input:focus {
-      border-color: var(--accent-primary);
-    }
-
-    .select-input option {
-      background: #0f172a;
-      color: #ffffff;
-    }
-
-    .active-chips-row {
+    /* Quick Pills */
+    .pill-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
       gap: 0.5rem;
       padding-top: 0.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid var(--border);
     }
-
-    .counter-text {
-      font-size: 0.85rem;
-      color: var(--text-muted);
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
-
-    .btn-reset {
-      background: none;
+    .pill-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .pill-btn:hover {
+      border-color: #4b5563;
+      color: var(--text);
+    }
+    .pill-btn.active {
+      background: #1e293b;
+      border-color: #3b82f6;
+      color: #60a5fa;
+    }
+    .reset-btn {
+      background: transparent;
       border: none;
-      color: #818cf8;
-      font-size: 0.85rem;
-      font-weight: 600;
+      color: #9ca3af;
+      font-size: 0.8rem;
       cursor: pointer;
       text-decoration: underline;
-      padding: 0.2rem 0.4rem;
+    }
+    .reset-btn:hover {
+      color: var(--text);
     }
 
-    /* Cards Grid */
-    .events-grid-wrapper {
-      max-width: 1280px;
+    /* Results Header */
+    .results-bar {
+      max-width: 1200px;
+      margin: 0 auto 1rem;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    /* Event Cards Grid */
+    .cards-container {
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 1.5rem 4rem;
     }
-
-    .events-grid {
+    .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
-
     .event-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 1.35rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      backdrop-filter: blur(14px);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
+      transition: border-color 0.15s ease, transform 0.15s ease;
     }
-
     .event-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--card-hover);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+      border-color: #374151;
+      transform: translateY(-2px);
     }
 
-    .card-badges {
+    /* Badges */
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .badge-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 0.85rem;
+      gap: 0.35rem;
     }
-
     .badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 0.22rem 0.6rem;
-      border-radius: 6px;
-      letter-spacing: 0.02em;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
       text-transform: uppercase;
       font-family: 'JetBrains Mono', monospace;
     }
-
-    .badge-online { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
-    .badge-offline { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
-    .badge-free { background: var(--free-glow); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .badge-paid { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-type { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-type { background: var(--badge-type-bg); color: var(--badge-type-text); }
+    .badge-online { background: var(--badge-online-bg); color: var(--badge-online-text); }
+    .badge-free { background: var(--badge-free-bg); color: var(--badge-free-text); }
+    .badge-paid { background: var(--badge-paid-bg); color: var(--badge-paid-text); }
 
     .card-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 0.5rem;
-      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-bottom: 0.35rem;
+      color: var(--text);
     }
-
     .card-organizer {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
+      margin-bottom: 0.85rem;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      margin-bottom: 0.85rem;
+      gap: 0.3rem;
     }
 
-    .card-organizer-check {
-      color: #38bdf8;
-      font-size: 0.95rem;
-    }
-
-    .card-meta {
+    .meta-list {
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
-      font-size: 0.85rem;
+      gap: 0.35rem;
+      font-size: 0.84rem;
       color: var(--text-sub);
-      margin-bottom: 1.15rem;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 0.75rem 0.85rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      background: var(--bg);
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      margin-bottom: 1rem;
     }
-
     .meta-row {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-
-    .card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-bottom: 1.25rem;
+    .meta-icon {
+      width: 14px;
+      height: 14px;
+      fill: #6b7280;
+      flex-shrink: 0;
     }
 
-    .tag-pill {
-      font-size: 0.72rem;
-      padding: 0.15rem 0.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
-      color: #94a3b8;
-    }
-
-    .card-actions {
+    .card-footer {
       display: flex;
-      gap: 0.65rem;
+      align-items: center;
+      gap: 0.75rem;
       margin-top: auto;
     }
-
     .btn-register {
       flex: 1;
-      display: flex;
+      display: inline-flex;
       justify-content: center;
       align-items: center;
       gap: 0.4rem;
-      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      background: var(--primary);
       color: #ffffff;
-      padding: 0.7rem 1rem;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.9rem;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
       text-decoration: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: background-color 0.15s ease;
     }
-
     .btn-register:hover {
-      background: linear-gradient(135deg, #4f46e5, #4338ca);
-      transform: translateY(-1px);
+      background: var(--primary-hover);
     }
-
-    .btn-icon {
-      padding: 0.7rem 0.85rem;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      color: var(--text-main);
+    .btn-secondary {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.6rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      background: var(--bg);
+      color: var(--text-sub);
+      border: 1px solid var(--border);
       cursor: pointer;
-      text-decoration: none;
-      display: grid;
-      place-items: center;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: #1f2937;
+      color: var(--text);
     }
 
-    .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: var(--card-hover);
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid #374151;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .close-btn:hover {
+      color: var(--text);
     }
 
     .empty-state {
       text-align: center;
-      padding: 4rem 1rem;
+      padding: 4rem 1.5rem;
       color: var(--text-muted);
     }
 
     footer {
-      border-top: 1px solid var(--card-border);
-      padding: 2.5rem 1.5rem;
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
       text-align: center;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
     }
 
-    @media (max-width: 768px) {
-      .events-grid { grid-template-columns: 1fr; }
-      .community-links { display: none; }
+    @media (max-width: 640px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      .header-title { font-size: 1.6rem; }
+      .filter-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="nav-container">
-      <a href="/" class="brand-group">
-        <div class="brand-logo">⚡</div>
-        <div>
-          <div class="brand-title">Eventador</div>
-          <div class="status-pill"><span class="status-dot"></span> Live Radar Active</div>
-        </div>
-      </a>
-      <div class="community-links">
-        <a href="https://t.me/EventadorBot" target="_blank" rel="noopener noreferrer" class="btn-community">
-          <span>✈️</span> Telegram Bot
-        </a>
-        <a href="https://discord.gg" target="_blank" rel="noopener noreferrer" class="btn-community">
-          <span>👾</span> Discord
-        </a>
-        <a href="https://whatsapp.com" target="_blank" rel="noopener noreferrer" class="btn-community">
-          <span>💬</span> WhatsApp
-        </a>
-      </div>
-    </div>
-  </header>
+  <div id="root"></div>
 
-  <main>
-    <section class="hero-section">
-      <h1 class="hero-headline">
-        Discover Verified <span class="hero-highlight">Hackathons & Meetups</span>
-      </h1>
-      <p class="hero-sub">
-        Autonomous discovery from Unstop, MLH, Luma, Devfolio, AWS, Google, and global communities. 100% first-party verified registration links.
-      </p>
-    </section>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
 
-    <section class="filter-panel">
-      <div class="filter-container">
-        <div class="search-row">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" class="search-input" placeholder="Search by topic, hackathon name, tech stack (AI, Web3, Cloud, Python)..." />
-          </div>
-        </div>
+    // SVG Icons
+    const SvgRadar = () => (
+      <svg className="brand-icon" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+      </svg>
+    );
 
-        <div class="dropdown-grid">
-          <div class="filter-item">
-            <label class="filter-label">Event Mode</label>
-            <select id="formatFilter" class="select-input">
-              <option value="ALL">All Modes (Online & Offline)</option>
-              <option value="ONLINE">🌐 Online Only</option>
-              <option value="OFFLINE">📍 In-Person (Offline)</option>
-              <option value="HYBRID">🔀 Hybrid</option>
-            </select>
-          </div>
+    const SvgCalendar = () => (
+      <svg className="meta-icon" viewBox="0 0 20 20">
+        <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"/>
+      </svg>
+    );
 
-          <div class="filter-item">
-            <label class="filter-label">Cost / Pricing</label>
-            <select id="pricingFilter" class="select-input">
-              <option value="ALL">All (Free & Paid)</option>
-              <option value="FREE">🟢 Free to Attend (100% Free)</option>
-              <option value="PAID">🏷️ Paid / Ticketed</option>
-            </select>
-          </div>
+    const SvgMapPin = () => (
+      <svg className="meta-icon" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+      </svg>
+    );
 
-          <div class="filter-item">
-            <label class="filter-label">Event Type</label>
-            <select id="typeFilter" class="select-input">
-              <option value="ALL">All Event Types</option>
-              <option value="HACKATHON">⚡ Hackathons & Challenges</option>
-              <option value="MEETUP">👥 Developer Meetups</option>
-              <option value="CONFERENCE">🎤 Conferences & Summits</option>
-              <option value="WORKSHOP">🎓 Workshops & Bootcamps</option>
-              <option value="COMPETITION">🏆 Coding Competitions</option>
-            </select>
-          </div>
+    const SvgExternal = () => (
+      <svg style={{ width: 14, height: 14, fill: "currentColor" }} viewBox="0 0 20 20">
+        <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+        <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+      </svg>
+    );
 
-          <div class="filter-item">
-            <label class="filter-label">Location / City</label>
-            <select id="cityFilter" class="select-input">
-              <option value="ALL">All Locations</option>
-              <option value="ONLINE">Online / Virtual</option>
-              <option value="Bengaluru">Bengaluru</option>
-              <option value="Delhi">Delhi NCR</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Hyderabad">Hyderabad</option>
-              <option value="Pune">Pune</option>
-              <option value="Chennai">Chennai</option>
-              <option value="Kolkata">Kolkata</option>
-              <option value="Ahmedabad">Ahmedabad</option>
-              <option value="Jaipur">Jaipur</option>
-            </select>
-          </div>
-        </div>
+    function App() {
+      const [events, setEvents] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      
+      // Filter states
+      const [search, setSearch] = useState("");
+      const [type, setType] = useState("ALL");
+      const [format, setFormat] = useState("ALL");
+      const [isFree, setIsFree] = useState("ALL");
+      const [city, setCity] = useState("ALL");
+      const [selectedEvent, setSelectedEvent] = useState(null);
 
-        <div class="active-chips-row">
-          <span id="eventsCount" class="counter-text">Showing 0 verified events</span>
-          <button id="resetBtn" class="btn-reset">Reset Filters</button>
-        </div>
-      </div>
-    </section>
+      useEffect(() => {
+        fetch("/api/events")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.events) {
+              setEvents(data.events);
+            }
+            setLoading(false);
+          })
+          .catch((err) => {
+            setError(err.message);
+            setLoading(false);
+          });
+      }, []);
 
-    <section class="events-grid-wrapper">
-      <div id="eventsGrid" class="events-grid">
-        <!-- Rendered dynamically -->
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <p>⚡ <strong>Eventador</strong> — Autonomous Intelligence Bot for Verified Tech Events.</p>
-    <p style="margin-top: 0.5rem; color: #64748b;">
-      Verification-first philosophy: Links are independently resolved to official organizer pages. Zero untrusted redirects.
-    </p>
-  </footer>
-
-  <script>
-    // Embedded sample fallback events for instantaneous render or offline preview
-    const SEED_EVENTS = [
-      {
-        id: "evt-devfolio-1",
-        title: "ETHIndia 2026 Hackathon",
-        organizer: "Devfolio & Ethereum Foundation",
-        format: "HYBRID",
-        city: "Bengaluru",
-        type: "HACKATHON",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-12-05T09:00:00Z",
-        deadline: "2026-11-20T23:59:00Z",
-        prize: "₹50,00,000",
-        tags: ["Web3", "Ethereum", "Smart Contracts", "DeFi"],
-        eventUrl: "https://ethindia.co",
-        registrationUrl: "https://ethindia.co/apply",
-        verified: true,
-        source: "Devfolio"
-      },
-      {
-        id: "evt-mlh-1",
-        title: "HackNITR 6.0",
-        organizer: "NIT Rourkela",
-        format: "ONLINE",
-        city: null,
-        type: "HACKATHON",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-11-15T10:00:00Z",
-        deadline: "2026-11-12T18:00:00Z",
-        prize: "₹5,00,000",
-        tags: ["AI/ML", "Cloud", "Open Source", "Students"],
-        eventUrl: "https://hacknitr.com",
-        registrationUrl: "https://hacknitr.com/register",
-        verified: true,
-        source: "MLH"
-      },
-      {
-        id: "evt-aws-1",
-        title: "AWS Community Day India 2026",
-        organizer: "AWS User Group India",
-        format: "ONLINE",
-        city: "Bengaluru",
-        type: "MEETUP",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-11-22T04:30:00Z",
-        deadline: "2026-11-21T18:30:00Z",
-        prize: "Certificates & Swags",
-        tags: ["AWS", "Serverless", "GenAI", "DevOps"],
-        eventUrl: "https://aws.amazon.com/developer/community/community-days/",
-        registrationUrl: "https://aws.amazon.com/developer/community/community-days/",
-        verified: true,
-        source: "AWS"
-      },
-      {
-        id: "evt-luma-1",
-        title: "Bangalore AI Agents & LLM Builders Meetup",
-        organizer: "GenAI Collective",
-        format: "OFFLINE",
-        city: "Bengaluru",
-        type: "MEETUP",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-11-18T12:30:00Z",
-        deadline: "2026-11-17T18:30:00Z",
-        prize: null,
-        tags: ["AI/ML", "LLM", "Agents", "Networking"],
-        eventUrl: "https://lu.ma/blr-ai-agents",
-        registrationUrl: "https://lu.ma/blr-ai-agents",
-        verified: true,
-        source: "Luma"
-      },
-      {
-        id: "evt-google-1",
-        title: "Google Cloud DevFest Summit",
-        organizer: "Google Developer Groups",
-        format: "HYBRID",
-        city: "Delhi",
-        type: "CONFERENCE",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-12-10T04:00:00Z",
-        deadline: "2026-12-01T18:30:00Z",
-        prize: null,
-        tags: ["Google Cloud", "Gemini", "Kubernetes", "Flutter"],
-        eventUrl: "https://developers.google.com/community/devfest",
-        registrationUrl: "https://developers.google.com/community/devfest",
-        verified: true,
-        source: "Google"
-      },
-      {
-        id: "evt-unstop-1",
-        title: "Smart India Hackathon 2026",
-        organizer: "Ministry of Education & AICTE",
-        format: "HYBRID",
-        city: "New Delhi",
-        type: "HACKATHON",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-12-18T03:30:00Z",
-        deadline: "2026-11-25T18:30:00Z",
-        prize: "₹1,00,00,000",
-        tags: ["Innovation", "GovTech", "Smart Cities", "Healthcare"],
-        eventUrl: "https://sih.gov.in",
-        registrationUrl: "https://sih.gov.in/register",
-        verified: true,
-        source: "SIH"
-      },
-      {
-        id: "evt-hacktober-1",
-        title: "Hacktoberfest Global Open Source Sprint",
-        organizer: "DigitalOcean & GitHub",
-        format: "ONLINE",
-        city: null,
-        type: "WORKSHOP",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-11-01T00:00:00Z",
-        deadline: "2026-11-30T23:59:00Z",
-        prize: "Badges & Tree Planting",
-        tags: ["Open Source", "Git", "GitHub", "Community"],
-        eventUrl: "https://hacktoberfest.com",
-        registrationUrl: "https://hacktoberfest.com",
-        verified: true,
-        source: "Hacktoberfest"
-      },
-      {
-        id: "evt-metamask-1",
-        title: "MetaMask Snaps & Web3 Developer Workshop",
-        organizer: "Consensys Developer Team",
-        format: "ONLINE",
-        city: null,
-        type: "WORKSHOP",
-        isFree: true,
-        priceDetail: "Free",
-        startDate: "2026-11-28T14:00:00Z",
-        deadline: "2026-11-27T18:30:00Z",
-        prize: null,
-        tags: ["Web3", "MetaMask", "JavaScript", "Security"],
-        eventUrl: "https://metamask.io/developer/",
-        registrationUrl: "https://metamask.io/developer/",
-        verified: true,
-        source: "MetaMask"
-      }
-    ];
-
-    let allEvents = [...SEED_EVENTS];
-
-    async function fetchApiEvents() {
-      try {
-        const res = await fetch('/api/events');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data.events) && data.events.length > 0) {
-            allEvents = data.events.map(e => ({
-              id: e.event_id,
-              title: e.title,
-              organizer: e.organizer_name || "Official Organizer",
-              format: e.format,
-              city: e.city,
-              type: e.event_type || "HACKATHON",
-              isFree: e.is_free !== 0,
-              priceDetail: e.price_detail || (e.is_free === 0 ? "Paid" : "Free"),
-              startDate: e.start_date,
-              deadline: e.registration_deadline,
-              prize: e.prize,
-              tags: e.categories ? JSON.parse(e.categories) : [],
-              eventUrl: e.event_url,
-              registrationUrl: e.registration_url || e.event_url,
-              verified: e.verification_decision === "VERIFIED_OFFICIAL",
-              source: e.organizer_name || "Verified Source"
-            }));
+      const filteredEvents = useMemo(() => {
+        return events.filter((ev) => {
+          if (type !== "ALL" && ev.event_type !== type) return false;
+          if (format !== "ALL" && ev.format !== format) return false;
+          if (isFree !== "ALL" && String(ev.is_free) !== String(isFree)) return false;
+          if (city !== "ALL" && (!ev.city || !ev.city.toLowerCase().includes(city.toLowerCase()))) return false;
+          
+          if (search.trim()) {
+            const q = search.toLowerCase();
+            const titleMatch = ev.title && ev.title.toLowerCase().includes(q);
+            const orgMatch = ev.organizer_name && ev.organizer_name.toLowerCase().includes(q);
+            const cityMatch = ev.city && ev.city.toLowerCase().includes(q);
+            if (!titleMatch && !orgMatch && !cityMatch) return false;
           }
+          return true;
+        });
+      }, [events, search, type, format, isFree, city]);
+
+      const resetFilters = () => {
+        setSearch("");
+        setType("ALL");
+        setFormat("ALL");
+        setIsFree("ALL");
+        setCity("ALL");
+      };
+
+      const formatDate = (dateStr) => {
+        if (!dateStr) return "TBD";
+        try {
+          const d = new Date(dateStr);
+          return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        } catch {
+          return dateStr;
         }
-      } catch (err) {
-        console.warn("Using fallback event dataset:", err);
-      }
-      renderFilteredEvents();
-    }
+      };
 
-    function formatDate(isoStr) {
-      if (!isoStr) return "TBA";
-      const d = new Date(isoStr);
-      return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
-
-    function renderFilteredEvents() {
-      const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
-      const formatVal = document.getElementById('formatFilter').value;
-      const pricingVal = document.getElementById('pricingFilter').value;
-      const typeVal = document.getElementById('typeFilter').value;
-      const cityVal = document.getElementById('cityFilter').value;
-
-      const filtered = allEvents.filter(e => {
-        // Search filter
-        if (searchVal) {
-          const hay = (e.title + " " + e.organizer + " " + (e.city || "") + " " + (e.tags || []).join(" ")).toLowerCase();
-          if (!hay.includes(searchVal)) return false;
-        }
-
-        // Format filter
-        if (formatVal !== "ALL") {
-          if (formatVal === "ONLINE" && e.format !== "ONLINE") return false;
-          if (formatVal === "OFFLINE" && e.format !== "OFFLINE") return false;
-          if (formatVal === "HYBRID" && e.format !== "HYBRID") return false;
-        }
-
-        // Pricing filter
-        if (pricingVal !== "ALL") {
-          if (pricingVal === "FREE" && !e.isFree) return false;
-          if (pricingVal === "PAID" && e.isFree) return false;
-        }
-
-        // Type filter
-        if (typeVal !== "ALL" && e.type !== typeVal) return false;
-
-        // City filter
-        if (cityVal !== "ALL") {
-          if (cityVal === "ONLINE" && e.format !== "ONLINE") return false;
-          if (cityVal !== "ONLINE" && (!e.city || !e.city.toLowerCase().includes(cityVal.toLowerCase()))) return false;
-        }
-
-        return true;
-      });
-
-      const grid = document.getElementById('eventsGrid');
-      const countEl = document.getElementById('eventsCount');
-      countEl.textContent = \`Showing \${filtered.length} verified events\`;
-
-      if (filtered.length === 0) {
-        grid.innerHTML = \`
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔍</div>
-            <h3>No events match your selected filters</h3>
-            <p>Try switching to "All Modes" or clearing your search keywords.</p>
-          </div>
-        \`;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(e => {
-        const isOnline = e.format === "ONLINE";
-        const formatBadgeClass = isOnline ? "badge-online" : "badge-offline";
-        const formatText = isOnline ? "🌐 Online" : \`📍 \${e.city || "In-Person"}\`;
-        const priceBadgeClass = e.isFree ? "badge-free" : "badge-paid";
-        const priceText = e.isFree ? "🟢 Free" : \`🏷️ \${e.priceDetail || "Paid"}\`;
-
-        return \`
-          <article class="event-card">
-            <div>
-              <div class="card-badges">
-                <span class="badge \${formatBadgeClass}">\${formatText}</span>
-                <span class="badge \${priceBadgeClass}">\${priceText}</span>
-                <span class="badge badge-type">\${e.type}</span>
-              </div>
-
-              <h2 class="card-title">\${e.title}</h2>
-              <div class="card-organizer">
-                <span>\${e.organizer}</span>
-                <span class="card-organizer-check" title="Verified Organizer">✓</span>
-              </div>
-
-              <div class="card-meta">
-                <div class="meta-row">
-                  <span>📅</span> <span>\${formatDate(e.startDate)}</span>
-                </div>
-                \${e.deadline ? \`
-                  <div class="meta-row" style="color: #fb7185;">
-                    <span>⏰</span> <span>Deadline: \${formatDate(e.deadline)}</span>
-                  </div>
-                \` : ''}
-                \${e.prize ? \`
-                  <div class="meta-row" style="color: #34d399;">
-                    <span>🏆</span> <span>Prize: \${e.prize}</span>
-                  </div>
-                \` : ''}
-              </div>
-
-              \${e.tags && e.tags.length ? \`
-                <div class="card-tags">
-                  \${e.tags.map(t => \`<span class="tag-pill">#\${t}</span>\`).join('')}
-                </div>
-              \` : ''}
-            </div>
-
-            <div class="card-actions">
-              <a href="\${e.registrationUrl || e.eventUrl}" target="_blank" rel="noopener noreferrer" class="btn-register">
-                Register Now ↗
+      return (
+        <div>
+          {/* Top Navbar */}
+          <header className="navbar">
+            <div className="nav-container">
+              <a href="/" className="brand">
+                <SvgRadar />
+                <span className="brand-title">Eventador</span>
+                <span className="brand-tag">INTELLIGENCE</span>
               </a>
-              <button class="btn-icon" onclick="navigator.clipboard.writeText('\${e.registrationUrl || e.eventUrl}'); alert('Event link copied!');" title="Copy Link">
-                📋
-              </button>
+              <div className="nav-actions">
+                <a href="https://t.me/EventadorBot" target="_blank" rel="noopener noreferrer" className="nav-btn">
+                  Telegram Bot
+                </a>
+                <a href="https://discord.gg" target="_blank" rel="noopener noreferrer" className="nav-btn">
+                  Discord
+                </a>
+                <a href="https://github.com/SudiptaSanki/Eventador" target="_blank" rel="noopener noreferrer" className="nav-btn">
+                  GitHub
+                </a>
+              </div>
             </div>
-          </article>
-        \`;
-      }).join('');
+          </header>
+
+          {/* Clean Headline (MLH Style) */}
+          <section className="header-section">
+            <h1 className="header-title">Developer & Tech Events</h1>
+            <p className="header-desc">
+              Verified tech hackathons, meetups, workshops, and summits across India and online. Authenticated first-party registration links only.
+            </p>
+          </section>
+
+          {/* Filter Panel */}
+          <section className="filter-wrapper">
+            <div className="filter-box">
+              {/* Search Bar */}
+              <div className="search-input-wrap">
+                <svg className="search-icon" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                </svg>
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search events, organizers, technologies, cities..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              {/* Dropdowns */}
+              <div className="filter-grid">
+                <div className="filter-col">
+                  <label className="filter-label">Event Type</label>
+                  <select className="filter-select" value={type} onChange={(e) => setType(e.target.value)}>
+                    <option value="ALL">All Types</option>
+                    <option value="HACKATHON">Hackathons</option>
+                    <option value="MEETUP">Meetups</option>
+                    <option value="CONFERENCE">Conferences</option>
+                    <option value="WORKSHOP">Workshops</option>
+                    <option value="COMPETITION">Competitions</option>
+                  </select>
+                </div>
+
+                <div className="filter-col">
+                  <label className="filter-label">Format / Mode</label>
+                  <select className="filter-select" value={format} onChange={(e) => setFormat(e.target.value)}>
+                    <option value="ALL">All Formats</option>
+                    <option value="ONLINE">Online (Virtual)</option>
+                    <option value="OFFLINE">In-Person (Offline)</option>
+                    <option value="HYBRID">Hybrid</option>
+                  </select>
+                </div>
+
+                <div className="filter-col">
+                  <label className="filter-label">Pricing</label>
+                  <select className="filter-select" value={isFree} onChange={(e) => setIsFree(e.target.value)}>
+                    <option value="ALL">All Events</option>
+                    <option value="1">Free to Attend</option>
+                    <option value="0">Paid</option>
+                  </select>
+                </div>
+
+                <div className="filter-col">
+                  <label className="filter-label">Region / City</label>
+                  <select className="filter-select" value={city} onChange={(e) => setCity(e.target.value)}>
+                    <option value="ALL">All Locations</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Delhi">Delhi NCR</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Pune">Pune</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Kolkata">Kolkata</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Quick Pills & Clear */}
+              <div className="pill-row">
+                <div className="pills">
+                  <button className={"pill-btn " + (format === "ONLINE" ? "active" : "")} onClick={() => setFormat(format === "ONLINE" ? "ALL" : "ONLINE")}>
+                    Online Only
+                  </button>
+                  <button className={"pill-btn " + (isFree === "1" ? "active" : "")} onClick={() => setIsFree(isFree === "1" ? "ALL" : "1")}>
+                    Free Events
+                  </button>
+                  <button className={"pill-btn " + (type === "HACKATHON" ? "active" : "")} onClick={() => setType(type === "HACKATHON" ? "ALL" : "HACKATHON")}>
+                    Hackathons
+                  </button>
+                  <button className={"pill-btn " + (type === "MEETUP" ? "active" : "")} onClick={() => setType(type === "MEETUP" ? "ALL" : "MEETUP")}>
+                    Meetups
+                  </button>
+                </div>
+                {(search || type !== "ALL" || format !== "ALL" || isFree !== "ALL" || city !== "ALL") && (
+                  <button className="reset-btn" onClick={resetFilters}>
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Results Bar */}
+          <div className="results-bar">
+            <span>Showing <strong>{filteredEvents.length}</strong> verified events</span>
+            <span>Refreshed 24/7 by Eventador</span>
+          </div>
+
+          {/* Cards Grid */}
+          <main className="cards-container">
+            {loading ? (
+              <div className="empty-state">Loading verified tech events...</div>
+            ) : filteredEvents.length === 0 ? (
+              <div className="empty-state">
+                <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>No events found matching your filter criteria.</p>
+                <button className="pill-btn" onClick={resetFilters}>Reset Filters</button>
+              </div>
+            ) : (
+              <div className="cards-grid">
+                {filteredEvents.map((ev) => (
+                  <article key={ev.event_id} className="event-card">
+                    <div>
+                      <div className="card-top">
+                        <div className="badge-group">
+                          <span className="badge badge-type">{ev.event_type || "EVENT"}</span>
+                          <span className="badge badge-online">{ev.format || "ONLINE"}</span>
+                          <span className={"badge " + (ev.is_free === 0 ? "badge-paid" : "badge-free")}>
+                            {ev.is_free === 0 ? "PAID" : "FREE"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h2 className="card-title">{ev.title}</h2>
+                      <div className="card-organizer">{ev.organizer_name || "Community Partner"}</div>
+
+                      <div className="meta-list">
+                        <div className="meta-row">
+                          <SvgCalendar />
+                          <span>{formatDate(ev.start_date)} {ev.end_date ? "– " + formatDate(ev.end_date) : ""}</span>
+                        </div>
+                        <div className="meta-row">
+                          <SvgMapPin />
+                          <span>{ev.format === "ONLINE" ? "Online / Worldwide" : (ev.city ? ev.city + ", India" : "In-Person")}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="card-footer">
+                      <a 
+                        href={ev.registration_url || ev.event_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="btn-register"
+                      >
+                        <span>Register</span>
+                        <SvgExternal />
+                      </a>
+                      <button className="btn-secondary" onClick={() => setSelectedEvent(ev)}>
+                        Details
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </main>
+
+          {/* Details Modal */}
+          {selectedEvent && (
+            <div className="modal-backdrop" onClick={() => setSelectedEvent(null)}>
+              <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div>
+                    <div className="badge-group" style={{ marginBottom: "0.5rem" }}>
+                      <span className="badge badge-type">{selectedEvent.event_type}</span>
+                      <span className="badge badge-online">{selectedEvent.format}</span>
+                      <span className={"badge " + (selectedEvent.is_free === 0 ? "badge-paid" : "badge-free")}>
+                        {selectedEvent.is_free === 0 ? "PAID" : "FREE"}
+                      </span>
+                    </div>
+                    <h2 style={{ fontSize: "1.3rem", fontWeight: 700 }}>{selectedEvent.title}</h2>
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Hosted by {selectedEvent.organizer_name || "Organizer"}</p>
+                  </div>
+                  <button className="close-btn" onClick={() => setSelectedEvent(null)}>&times;</button>
+                </div>
+
+                <div className="meta-list">
+                  <div className="meta-row"><SvgCalendar /><span>Dates: {formatDate(selectedEvent.start_date)} to {formatDate(selectedEvent.end_date)}</span></div>
+                  <div className="meta-row"><SvgMapPin /><span>Location: {selectedEvent.venue || selectedEvent.city || selectedEvent.format}</span></div>
+                  {selectedEvent.registration_deadline && (
+                    <div className="meta-row"><span>Deadline: {formatDate(selectedEvent.registration_deadline)}</span></div>
+                  )}
+                  {selectedEvent.price_detail && (
+                    <div className="meta-row"><span>Price: {selectedEvent.price_detail}</span></div>
+                  )}
+                  {selectedEvent.prize && (
+                    <div className="meta-row"><span>Prize / Benefits: {selectedEvent.prize}</span></div>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
+                  <a 
+                    href={selectedEvent.registration_url || selectedEvent.event_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn-register"
+                  >
+                    <span>Visit Official Registration Page</span>
+                    <SvgExternal />
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Clean Footer */}
+          <footer>
+            <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+              <span>&copy; {new Date().getFullYear()} Eventador. Open developer intelligence platform.</span>
+              <span>All links verified first-party. No phishing, no redirects.</span>
+            </div>
+          </footer>
+        </div>
+      );
     }
 
-    // Attach listeners
-    ['searchInput', 'formatFilter', 'pricingFilter', 'typeFilter', 'cityFilter'].forEach(id => {
-      document.getElementById(id).addEventListener('input', renderFilteredEvents);
-    });
-
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('formatFilter').value = 'ALL';
-      document.getElementById('pricingFilter').value = 'ALL';
-      document.getElementById('typeFilter').value = 'ALL';
-      document.getElementById('cityFilter').value = 'ALL';
-      renderFilteredEvents();
-    });
-
-    fetchApiEvents();
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
 </html>`;

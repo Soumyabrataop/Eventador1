@@ -1,8 +1,10 @@
 /**
- * Eventador 24/7 Background Daemon for Oracle Cloud VPS / Linux VM.
+ * Eventador 24/7 Background Daemon for Render / Koyeb / VPS / Linux VM.
  * Runs autonomous discovery, verification, and dispatch loop on a polite schedule.
- * Handles graceful shutdown (SIGINT, SIGTERM) and transient network retry backoff.
+ * Exposes a lightweight HTTP server on PORT so Render Web Services / Koyeb / UptimeRobot
+ * can ping /health every 10 mins to keep the container alive 24/7.
  */
+import http from "node:http";
 import { migrate, openDatabase } from "../src/db/sqlite.js";
 import { createSqliteStore } from "../src/db/sqliteStore.js";
 import { runLoopStages } from "../src/scheduler/loop.js";
@@ -25,15 +27,48 @@ const intervalMins = getArgNum("--interval-mins", 60);
 const verifyLimit = getArgNum("--verify-limit", 15);
 const linkLimit = getArgNum("--link-limit", 50);
 
+let lastCycleAt = new Date().toISOString();
+let totalCycles = 0;
+let lastSummary = { discovered: 0, verified: 0, dispatched: 0 };
+
+// Built-in HTTP health server for Render / Koyeb keep-alive pings
+const port = Number(process.env.PORT) || 3000;
+const server = http.createServer((req, res) => {
+  if (req.url === "/health" || req.url === "/") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        service: "Eventador Crawler Daemon",
+        status: "RUNNING",
+        uptimeSeconds: Math.floor(process.uptime()),
+        totalCycles,
+        lastCycleAt,
+        lastSummary,
+        mode: live ? "LIVE" : "DRY-RUN",
+      })
+    );
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found");
+  }
+});
+
+server.listen(port, () => {
+  console.log(`[Eventador Daemon] Keep-alive HTTP server listening on port ${port}`);
+  console.log(`[Eventador Daemon] Ready for keep-alive pings at http://localhost:${port}/health`);
+});
+
 let running = true;
 const shutdown = () => {
   console.log("\n[Eventador Daemon] Received stop signal. Shutting down gracefully...");
   running = false;
+  server.close();
 };
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-console.log(`[Eventador Daemon] Starting 24/7 service on Oracle Cloud VPS...`);
+console.log(`[Eventador Daemon] Starting 24/7 service...`);
 console.log(`[Eventador Daemon] Mode: ${live ? "LIVE DISPATCH" : "DRY-RUN (Safe mode)"}`);
 console.log(`[Eventador Daemon] Loop Interval: ~${intervalMins} minutes`);
 
@@ -105,10 +140,18 @@ async function runIteration(iteration: number): Promise<void> {
       : null,
   });
 
+  lastCycleAt = new Date().toISOString();
+  totalCycles = iteration;
+  lastSummary = {
+    discovered: report.discovery?.totals.discovered ?? 0,
+    verified: report.verification?.verified ?? 0,
+    dispatched: report.notify?.sent ?? 0,
+  };
+
   console.log(`[Eventador Daemon] Cycle #${iteration} complete:`);
-  console.log(`  - Discovered: ${report.discovery?.totals.discovered ?? 0}`);
-  console.log(`  - Verified:   ${report.verification?.verified ?? 0}`);
-  console.log(`  - Dispatched: ${report.notify?.sent ?? 0}`);
+  console.log(`  - Discovered: ${lastSummary.discovered}`);
+  console.log(`  - Verified:   ${lastSummary.verified}`);
+  console.log(`  - Dispatched: ${lastSummary.dispatched}`);
 
   // Auto-sync with Cloudflare Edge if configured
   await syncToCloudflare();
