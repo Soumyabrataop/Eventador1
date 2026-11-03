@@ -60,35 +60,35 @@
     }
 
     [data-theme="dark"] {
-      /* Dark Theme (Deep Charcoal Black with Glowing Borders) */
-      --bg: #090a0f;
-      --surface: #11141e;
-      --surface-subtle: #171c2a;
-      --surface-hover: #1f2538;
-      --border: #23293d;
-      --border-focus: #60a5fa;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-sub: #cbd5e1;
-      --navbar-bg: rgba(17, 20, 30, 0.9);
-      --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-      --card-shadow-hover: 0 12px 36px rgba(0, 0, 0, 0.6);
+      /* Complete OLED Pitch Dark (True Pure Black) */
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-subtle: #121212;
+      --surface-hover: #1c1c1c;
+      --border: #222222;
+      --border-focus: #3b82f6;
+      --text: #ffffff;
+      --text-muted: #8e8e93;
+      --text-sub: #d1d1d6;
+      --navbar-bg: rgba(0, 0, 0, 0.85);
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+      --card-shadow-hover: 0 10px 32px rgba(0, 0, 0, 0.95);
 
       --badge-free-bg: rgba(16, 185, 129, 0.12);
       --badge-free-text: #34d399;
-      --badge-free-border: rgba(16, 185, 129, 0.3);
+      --badge-free-border: rgba(16, 185, 129, 0.28);
       --badge-paid-bg: rgba(245, 158, 11, 0.12);
       --badge-paid-text: #fbbf24;
-      --badge-paid-border: rgba(245, 158, 11, 0.3);
+      --badge-paid-border: rgba(245, 158, 11, 0.28);
       --badge-online-bg: rgba(59, 130, 246, 0.12);
       --badge-online-text: #60a5fa;
-      --badge-online-border: rgba(59, 130, 246, 0.3);
-      --badge-type-bg: rgba(139, 92, 246, 0.12);
-      --badge-type-text: #a78bfa;
-      --badge-type-border: rgba(139, 92, 246, 0.3);
+      --badge-online-border: rgba(59, 130, 246, 0.28);
+      --badge-type-bg: rgba(168, 85, 247, 0.12);
+      --badge-type-text: #c084fc;
+      --badge-type-border: rgba(168, 85, 247, 0.28);
       --badge-local-bg: rgba(239, 68, 68, 0.12);
       --badge-local-text: #f87171;
-      --badge-local-border: rgba(239, 68, 68, 0.3);
+      --badge-local-border: rgba(239, 68, 68, 0.28);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -104,18 +104,47 @@
       overflow-x: hidden;
     }
 
-    /* Ambient Geometry Orbits (Elixpo Style) */
-    .bg-orbits {
-      position: absolute;
-      top: -40px;
-      right: -40px;
-      width: 500px;
-      height: 500px;
+    /* Ambient Centered Radar & Orbit Geometry */
+    .ambient-orbits-wrapper {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      max-width: 1400px;
+      height: 100vh;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.4;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
     }
-    [data-theme="dark"] .bg-orbits { opacity: 0.18; }
+    .ambient-orbits-svg {
+      width: 1200px;
+      height: 750px;
+      color: var(--text);
+      opacity: 0.14;
+      transition: opacity 0.3s ease;
+    }
+    [data-theme="dark"] .ambient-orbits-svg {
+      opacity: 0.24;
+    }
+    .orbit-dot {
+      transition: transform 0.3s ease;
+    }
+    [data-theme="dark"] .orbit-dot-orange {
+      filter: drop-shadow(0 0 8px #f97316);
+    }
+    [data-theme="dark"] .orbit-dot-blue {
+      filter: drop-shadow(0 0 8px #3b82f6);
+    }
+    [data-theme="dark"] .orbit-dot-green {
+      filter: drop-shadow(0 0 8px #10b981);
+    }
+    [data-theme="dark"] .orbit-dot-purple {
+      filter: drop-shadow(0 0 8px #a855f7);
+    }
 
     /* ==========================================================================
        Navbar (Pill Container) — Clean, Zero-Clash Design
@@ -212,6 +241,60 @@
       border: none;
     }
     .btn-action-bot:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* Mobile Horizontal Tab Navigation Strip */
+    .mobile-nav-bar {
+      display: none;
+    }
+    @media (max-width: 860px) {
+      .nav-links {
+        display: none !important;
+      }
+      .mobile-nav-bar {
+        display: block;
+        width: 100%;
+        max-width: 1140px;
+        margin: -0.75rem auto 1.25rem;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 90;
+      }
+      .mobile-tab-scroll {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 0.35rem 0.2rem;
+      }
+      .mobile-tab-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .mobile-tab-pill {
+        flex-shrink: 0;
+        background: var(--surface);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        padding: 0.48rem 0.95rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: inherit;
+      }
+      .mobile-tab-pill:hover {
+        color: var(--text);
+        background: var(--surface-hover);
+      }
+      .mobile-tab-pill.active {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+        font-weight: 700;
+      }
+    }
 
     /* Cloudflare-style Profile/Settings Dropdown */
     .profile-wrap {
@@ -430,34 +513,56 @@
       font-size: 0.92rem;
     }
 
-    /* Right Side: Big Orbit Canvas with Circle and 3D Cards */
+    /* Right Side: Big Centered Orbit Canvas with Concentric Radar Rings & 3D Cards */
     .hero-orbit-canvas {
       position: relative;
       width: 100%;
-      height: 330px;
+      height: 360px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .hero-big-circle {
       position: absolute;
-      width: 310px;
-      height: 310px;
+      width: 360px;
+      height: 360px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.05) 55%, transparent 75%);
+      background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, rgba(59, 130, 246, 0.06) 45%, transparent 72%);
       border: 1px dashed var(--border);
       pointer-events: none;
       z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-mid-circle {
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      border: 1px dotted var(--border);
+      pointer-events: none;
+    }
+    .hero-inner-circle {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      opacity: 0.6;
+      pointer-events: none;
     }
     .circle-dot {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
+      box-shadow: 0 0 10px currentColor;
     }
-    .circle-dot-orange { background: #f97316; top: 25px; left: 45px; }
-    .circle-dot-blue { background: #3b82f6; bottom: 35px; right: 45px; }
-    .circle-dot-green { background: #10b981; top: 135px; right: 12px; }
+    .circle-dot-orange { background: #f97316; color: #f97316; top: 22px; left: 62px; }
+    .circle-dot-blue { background: #3b82f6; color: #3b82f6; bottom: 35px; right: 55px; }
+    .circle-dot-green { background: #10b981; color: #10b981; top: 155px; right: 8px; }
+    .circle-dot-purple { background: #a855f7; color: #a855f7; bottom: 85px; left: 16px; }
 
     /* Animated 3D Stacked Cards Deck */
     .deck-container {
@@ -612,14 +717,14 @@
     .events-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-      gap: 1.25rem;
+      gap: 1.5rem;
     }
 
     .event-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.25rem;
+      border-radius: 18px;
+      padding: 1.4rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -630,15 +735,16 @@
     .event-card:hover {
       transform: translateY(-3px);
       box-shadow: var(--card-shadow-hover);
-      border-color: #cbd5e1;
+      border-color: #555;
     }
-    [data-theme="dark"] .event-card:hover { border-color: #334155; }
+    [data-theme="dark"] .event-card:hover { border-color: #3b82f6; }
 
     .card-badges {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-bottom: 0.75rem;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 0.85rem;
     }
     .badge-pill {
       font-size: 0.68rem;
@@ -775,70 +881,80 @@
     }
 
     .card-title {
-      font-size: 1.12rem;
-      font-weight: 700;
-      line-height: 1.35;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1.36;
       color: var(--text);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.015em;
     }
     .card-org {
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--text-muted);
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.95rem;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.35rem;
     }
 
     .card-meta-list {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-      font-size: 0.82rem;
+      gap: 0.55rem;
+      font-size: 0.84rem;
       color: var(--text-sub);
-      padding: 0.75rem 0;
+      padding: 0.85rem 0;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      margin-bottom: 0.95rem;
+      margin-bottom: 1.1rem;
     }
     .meta-row {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
     }
 
     .card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      margin-top: auto;
     }
     .btn-card-register {
+      flex: 1;
       background: var(--text);
       color: var(--bg);
       border: none;
-      padding: 0.45rem 0.9rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
+      padding: 0.55rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.84rem;
       font-weight: 700;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      transition: opacity 0.15s ease;
+      justify-content: center;
+      gap: 0.35rem;
+      transition: opacity 0.15s ease, transform 0.15s ease;
       cursor: pointer;
+      min-height: 40px;
     }
-    .btn-card-register:hover { opacity: 0.88; }
+    .btn-card-register:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
     .btn-card-details {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.45rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.84rem;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s ease;
+      min-height: 40px;
+      white-space: nowrap;
     }
     .btn-card-details:hover { background: var(--surface-hover); }
 
@@ -1141,19 +1257,125 @@
       color: var(--text-muted);
     }
     .modal-close:hover { color: var(--text); }
+
+    /* ==========================================================================
+       Responsive Media Queries for Mobile & Tablet Devices
+       ========================================================================== */
+    @media (max-width: 860px) {
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 1.25rem 1rem 0.5rem;
+      }
+      .hero-title {
+        font-size: clamp(2.1rem, 6vw, 2.9rem);
+      }
+      .hero-orbit-canvas {
+        height: 310px;
+      }
+      .hero-big-circle {
+        width: 290px;
+        height: 290px;
+      }
+      .hero-mid-circle {
+        width: 200px;
+        height: 200px;
+      }
+      .hero-inner-circle {
+        width: 110px;
+        height: 110px;
+      }
+      .deck-card {
+        width: 265px;
+      }
+      .hero-metrics-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .events-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+      }
+      .page-container {
+        padding: 0 1rem 3.5rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .events-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+      }
+      .dropdowns-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+      }
+      .dropdown-select {
+        min-height: 44px;
+        font-size: 0.88rem;
+      }
+      .search-field {
+        min-height: 46px;
+        font-size: 0.92rem;
+      }
+      .radar-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem;
+      }
+      .card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+      .btn-card-register, .btn-card-details {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .dropdowns-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-metrics-row {
+        grid-template-columns: 1fr;
+      }
+      .deck-card {
+        width: 245px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Ambient Orbit Graphics -->
-  <svg class="bg-orbits" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="250" cy="250" r="140" stroke="#f97316" stroke-width="1.2" stroke-dasharray="4 6"/>
-    <circle cx="250" cy="250" r="210" stroke="#3b82f6" stroke-width="1" stroke-dasharray="6 8"/>
-    <circle cx="250" cy="250" r="70" stroke="#10b981" stroke-width="1.5"/>
-    <circle cx="110" cy="250" r="6" fill="#f97316"/>
-    <circle cx="250" cy="40" r="5" fill="#3b82f6"/>
-    <circle cx="320" cy="250" r="5" fill="#10b981"/>
-  </svg>
+  <!-- Ambient Centered Orbit Geometry (Decorates the entire site with high-aesthetic planetary rings) -->
+  <div class="ambient-orbits-wrapper" aria-hidden="true">
+    <svg class="ambient-orbits-svg" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="centerGlow" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#f97316" stop-opacity="0.08" />
+          <stop offset="45%" stop-color="#3b82f6" stop-opacity="0.05" />
+          <stop offset="100%" stop-color="transparent" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <!-- Central Ambient Radiance -->
+      <circle cx="600" cy="300" r="420" fill="url(#centerGlow)" />
+      <!-- Concentric Radar Rings -->
+      <circle cx="600" cy="300" r="440" stroke="currentColor" stroke-width="1" stroke-dasharray="4 8" opacity="0.35" />
+      <circle cx="600" cy="300" r="320" stroke="currentColor" stroke-width="1" stroke-dasharray="6 6" opacity="0.45" />
+      <circle cx="600" cy="300" r="200" stroke="currentColor" stroke-width="1.2" opacity="0.6" />
+      <circle cx="600" cy="300" r="95" stroke="currentColor" stroke-width="1" stroke-dasharray="2 4" opacity="0.7" />
+      <!-- Colorful Orbiting Planetary Accents -->
+      <circle cx="280" cy="300" r="7" fill="#f97316" class="orbit-dot orbit-dot-orange" />
+      <circle cx="920" cy="300" r="6" fill="#3b82f6" class="orbit-dot orbit-dot-blue" />
+      <circle cx="600" cy="100" r="5.5" fill="#10b981" class="orbit-dot orbit-dot-green" />
+      <circle cx="738" cy="438" r="5" fill="#a855f7" class="orbit-dot orbit-dot-purple" />
+    </svg>
+  </div>
 
   <div id="root"></div>
 

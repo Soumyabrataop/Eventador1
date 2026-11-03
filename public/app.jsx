@@ -36,20 +36,39 @@ const COUNTRIES_BY_CONTINENT = {
   ]
 };
 
-// Popular tech cities with known coordinates for instant lock & offline support
+// Global Default Location (Never force or lock any single city onto global developers!)
+const WORLDWIDE_LOCATION = {
+  mode: "global",
+  city: "Worldwide",
+  country: "Global",
+  label: "Worldwide / Global",
+  isGlobal: true,
+  lat: null,
+  lng: null,
+  continent: "ALL"
+};
+
+// Popular tech cities with known coordinates for instant selection & offline support
 const POPULAR_CITIES = [
-  { name: "Kolkata", country: "India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" },
-  { name: "Bengaluru", country: "India", lat: 12.9716, lng: 77.5946, continent: "GLOBAL_SOUTH" },
-  { name: "New Delhi", country: "India", lat: 28.6139, lng: 77.2090, continent: "GLOBAL_SOUTH" },
-  { name: "Mumbai", country: "India", lat: 19.0760, lng: 72.8777, continent: "GLOBAL_SOUTH" },
-  { name: "Hyderabad", country: "India", lat: 17.3850, lng: 78.4867, continent: "GLOBAL_SOUTH" },
-  { name: "Singapore", country: "Singapore", lat: 1.3521, lng: 103.8198, continent: "GLOBAL_SOUTH" },
-  { name: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503, continent: "GLOBAL_SOUTH" },
-  { name: "Sydney", country: "Australia", lat: -33.8688, lng: 151.2093, continent: "GLOBAL_SOUTH" },
-  { name: "London", country: "United Kingdom", lat: 51.5074, lng: -0.1278, continent: "EUROPE" },
-  { name: "Berlin", country: "Germany", lat: 52.5200, lng: 13.4050, continent: "EUROPE" },
-  { name: "San Francisco", country: "United States", lat: 37.7749, lng: -122.4194, continent: "NORTH_AMERICA" },
-  { name: "Toronto", country: "Canada", lat: 43.6532, lng: -79.3832, continent: "NORTH_AMERICA" }
+  { name: "Worldwide", country: "Global", label: "Worldwide / Global", isGlobal: true, lat: null, lng: null, continent: "ALL" },
+  { name: "San Francisco", country: "United States", label: "San Francisco, USA", lat: 37.7749, lng: -122.4194, continent: "NORTH_AMERICA" },
+  { name: "New York", country: "United States", label: "New York, USA", lat: 40.7128, lng: -74.0060, continent: "NORTH_AMERICA" },
+  { name: "London", country: "United Kingdom", label: "London, UK", lat: 51.5074, lng: -0.1278, continent: "EUROPE" },
+  { name: "Berlin", country: "Germany", label: "Berlin, Germany", lat: 52.5200, lng: 13.4050, continent: "EUROPE" },
+  { name: "Paris", country: "France", label: "Paris, France", lat: 48.8566, lng: 2.3522, continent: "EUROPE" },
+  { name: "Amsterdam", country: "Netherlands", label: "Amsterdam, Netherlands", lat: 52.3676, lng: 4.9041, continent: "EUROPE" },
+  { name: "Singapore", country: "Singapore", label: "Singapore", lat: 1.3521, lng: 103.8198, continent: "GLOBAL_SOUTH" },
+  { name: "Tokyo", country: "Japan", label: "Tokyo, Japan", lat: 35.6762, lng: 139.6503, continent: "GLOBAL_SOUTH" },
+  { name: "Seoul", country: "South Korea", label: "Seoul, South Korea", lat: 37.5665, lng: 126.9780, continent: "GLOBAL_SOUTH" },
+  { name: "Sydney", country: "Australia", label: "Sydney, Australia", lat: -33.8688, lng: 151.2093, continent: "GLOBAL_SOUTH" },
+  { name: "Toronto", country: "Canada", label: "Toronto, Canada", lat: 43.6532, lng: -79.3832, continent: "NORTH_AMERICA" },
+  { name: "Bengaluru", country: "India", label: "Bengaluru, India", lat: 12.9716, lng: 77.5946, continent: "GLOBAL_SOUTH" },
+  { name: "New Delhi", country: "India", label: "New Delhi, India", lat: 28.6139, lng: 77.2090, continent: "GLOBAL_SOUTH" },
+  { name: "Mumbai", country: "India", label: "Mumbai, India", lat: 19.0760, lng: 72.8777, continent: "GLOBAL_SOUTH" },
+  { name: "Kolkata", country: "India", label: "Kolkata, India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" },
+  { name: "Hyderabad", country: "India", label: "Hyderabad, India", lat: 17.3850, lng: 78.4867, continent: "GLOBAL_SOUTH" },
+  { name: "São Paulo", country: "Brazil", label: "São Paulo, Brazil", lat: -23.5505, lng: -46.6333, continent: "LATIN_AMERICA" },
+  { name: "Dubai", country: "United Arab Emirates", label: "Dubai, UAE", lat: 25.2048, lng: 55.2708, continent: "MEA" }
 ];
 
 // Haversine formula to compute exact distance in kilometers
@@ -445,46 +464,33 @@ const OSINT_DORKS = [
 function detectCityFromTimezone() {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (tz.includes("Kolkata") || tz.includes("Calcutta")) return { city: "Kolkata", country: "India", label: "Kolkata, India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" };
-    if (tz.includes("Bangalore") || tz.includes("Bengaluru")) return { city: "Bengaluru", country: "India", label: "Bengaluru, India", lat: 12.9716, lng: 77.5946, continent: "GLOBAL_SOUTH" };
-    if (tz.includes("Delhi") || tz.includes("New_Delhi")) return { city: "New Delhi", country: "India", label: "New Delhi, India", lat: 28.6139, lng: 77.2090, continent: "GLOBAL_SOUTH" };
-    if (tz.includes("Mumbai") || tz.includes("Bombay")) return { city: "Mumbai", country: "India", label: "Mumbai, India", lat: 19.0760, lng: 72.8777, continent: "GLOBAL_SOUTH" };
     if (tz.includes("London")) return { city: "London", country: "United Kingdom", label: "London, UK", lat: 51.5074, lng: -0.1278, continent: "EUROPE" };
     if (tz.includes("New_York")) return { city: "New York", country: "United States", label: "New York, USA", lat: 40.7128, lng: -74.0060, continent: "NORTH_AMERICA" };
     if (tz.includes("Los_Angeles") || tz.includes("San_Francisco")) return { city: "San Francisco", country: "United States", label: "San Francisco, USA", lat: 37.7749, lng: -122.4194, continent: "NORTH_AMERICA" };
     if (tz.includes("Berlin") || tz.includes("Frankfurt")) return { city: "Berlin", country: "Germany", label: "Berlin, Germany", lat: 52.5200, lng: 13.4050, continent: "EUROPE" };
+    if (tz.includes("Paris")) return { city: "Paris", country: "France", label: "Paris, France", lat: 48.8566, lng: 2.3522, continent: "EUROPE" };
     if (tz.includes("Singapore")) return { city: "Singapore", country: "Singapore", label: "Singapore", lat: 1.3521, lng: 103.8198, continent: "GLOBAL_SOUTH" };
     if (tz.includes("Tokyo")) return { city: "Tokyo", country: "Japan", label: "Tokyo, Japan", lat: 35.6762, lng: 139.6503, continent: "GLOBAL_SOUTH" };
+    if (tz.includes("Sydney")) return { city: "Sydney", country: "Australia", label: "Sydney, Australia", lat: -33.8688, lng: 151.2093, continent: "GLOBAL_SOUTH" };
+    if (tz.includes("Toronto")) return { city: "Toronto", country: "Canada", label: "Toronto, Canada", lat: 43.6532, lng: -79.3832, continent: "NORTH_AMERICA" };
+    if (tz.includes("Bangalore") || tz.includes("Bengaluru")) return { city: "Bengaluru", country: "India", label: "Bengaluru, India", lat: 12.9716, lng: 77.5946, continent: "GLOBAL_SOUTH" };
+    if (tz.includes("Delhi") || tz.includes("New_Delhi")) return { city: "New Delhi", country: "India", label: "New Delhi, India", lat: 28.6139, lng: 77.2090, continent: "GLOBAL_SOUTH" };
+    if (tz.includes("Mumbai") || tz.includes("Bombay")) return { city: "Mumbai", country: "India", label: "Mumbai, India", lat: 19.0760, lng: 72.8777, continent: "GLOBAL_SOUTH" };
+    if (tz.includes("Kolkata") || tz.includes("Calcutta")) return { city: "Kolkata", country: "India", label: "Kolkata, India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" };
   } catch {}
-  return { city: "Kolkata", country: "India", label: "Kolkata, India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" };
+  return WORLDWIDE_LOCATION;
 }
 
 function detectContinentFromTimezone() {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (tz.startsWith("Asia/") || tz.startsWith("Australia/") || tz.startsWith("Pacific/") || tz.startsWith("Indian/")) {
-      return "GLOBAL_SOUTH";
-    }
-    if (tz.startsWith("Europe/") || tz.startsWith("Atlantic/")) {
-      return "EUROPE";
-    }
-    if (
-      tz.startsWith("America/Sao_Paulo") ||
-      tz.startsWith("America/Buenos_Aires") ||
-      tz.startsWith("America/Bogota") ||
-      tz.startsWith("America/Lima") ||
-      tz.startsWith("America/Santiago")
-    ) {
-      return "LATIN_AMERICA";
-    }
-    if (tz.startsWith("America/")) {
-      return "NORTH_AMERICA";
-    }
-    if (tz.startsWith("Africa/")) {
-      return "MEA";
-    }
+    if (tz.startsWith("Europe/") || tz.startsWith("Atlantic/")) return "EUROPE";
+    if (tz.startsWith("America/Sao_Paulo") || tz.startsWith("America/Buenos_Aires") || tz.startsWith("America/Bogota") || tz.startsWith("America/Santiago")) return "LATIN_AMERICA";
+    if (tz.startsWith("America/")) return "NORTH_AMERICA";
+    if (tz.startsWith("Africa/")) return "MEA";
+    if (tz.startsWith("Asia/") || tz.startsWith("Australia/") || tz.startsWith("Pacific/")) return "GLOBAL_SOUTH";
   } catch {}
-  return "GLOBAL_SOUTH";
+  return "ALL";
 }
 
 function App() {
@@ -510,18 +516,13 @@ function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileRef = useRef(null);
 
-  // Exact Geolocation & Lock State (Prevents repeated nagging!)
-  const [isLocationLocked, setIsLocationLocked] = useState(() => {
-    return localStorage.getItem("eventador-loc-locked") === "true";
-  });
-
+  // Exact Geolocation / Active Location State (Defaults to Worldwide — Zero forced lock!)
   const [exactLocation, setExactLocation] = useState(() => {
     try {
-      const saved = localStorage.getItem("eventador-exact-location");
+      const saved = localStorage.getItem("eventador-user-location");
       if (saved) return JSON.parse(saved);
     } catch {}
-    // If not saved, return smart default timezone location
-    return detectCityFromTimezone();
+    return WORLDWIDE_LOCATION;
   });
 
   const [detectingExactLocation, setDetectingExactLocation] = useState(false);
@@ -606,17 +607,20 @@ function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  // Lock Location Helper
-  const lockLocation = (locObj) => {
+  // Set User Location (Never lock or force any single city!)
+  const setUserLocation = (locObj) => {
     setExactLocation(locObj);
-    setIsLocationLocked(true);
     setIsEditingLocation(false);
-    localStorage.setItem("eventador-exact-location", JSON.stringify(locObj));
-    localStorage.setItem("eventador-loc-locked", "true");
-    setLocationStatusMessage(`🔒 Locked: ${locObj.label}`);
+    if (locObj && !locObj.isGlobal) {
+      localStorage.setItem("eventador-user-location", JSON.stringify(locObj));
+      setLocationStatusMessage(`Active location: ${locObj.label || locObj.city}`);
+    } else {
+      localStorage.removeItem("eventador-user-location");
+      setLocationStatusMessage("Viewing worldwide events");
+    }
   };
 
-  // Exact Location Request Handler (GPS + Nominatim reverse geocode)
+  // Exact Location Request Handler (GPS + OpenStreetMap reverse geocode)
   const requestExactLocation = (interactive = false) => {
     if (!navigator.geolocation) {
       if (interactive) setLocationStatusMessage("Geolocation is not supported by your browser.");
@@ -640,32 +644,30 @@ function App() {
           const addr = data.address || {};
           const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Your City";
           const state = addr.state || "";
-          const country = addr.country || "India";
+          const country = addr.country || "Detected Region";
           const label = state ? `${city}, ${state}, ${country}` : `${city}, ${country}`;
 
           // Deduce continent for broad global categorization
-          let continent = "GLOBAL_SOUTH";
+          let continent = "ALL";
           if (lng >= 60 && lng <= 180 && lat >= -50) continent = "GLOBAL_SOUTH";
           else if (lng >= -25 && lng <= 45 && lat >= 35) continent = "EUROPE";
           else if (lng >= -170 && lng <= -50 && lat >= 15) continent = "NORTH_AMERICA";
           else if (lng >= -120 && lng <= -30 && lat < 15) continent = "LATIN_AMERICA";
           else if (lng >= -20 && lng <= 60 && lat >= -35 && lat < 37) continent = "MEA";
 
-          const locObj = { lat, lng, city, state, country, label, continent };
-          lockLocation(locObj);
+          const locObj = { lat, lng, city, state, country, label, continent, isGlobal: false };
+          setUserLocation(locObj);
           setDetectingExactLocation(false);
         } catch {
           // Fallback to coordinates if reverse lookup fails
-          const locObj = { lat, lng, city: "Detected Location", state: "", country: "India", label: `${lat.toFixed(2)}°, ${lng.toFixed(2)}°`, continent: "GLOBAL_SOUTH" };
-          lockLocation(locObj);
+          const locObj = { lat, lng, city: "Current Location", state: "", country: "Local", label: `${lat.toFixed(2)}°, ${lng.toFixed(2)}°`, continent: "ALL", isGlobal: false };
+          setUserLocation(locObj);
           setDetectingExactLocation(false);
         }
       },
       (err) => {
         setDetectingExactLocation(false);
-        const tzCity = detectCityFromTimezone();
-        lockLocation(tzCity);
-        setLocationStatusMessage(err.code === 1 ? `Using timezone default: ${tzCity.label}` : "Location lookup timed out.");
+        setLocationStatusMessage(err.code === 1 ? "Location permission denied. Please choose your city from the list." : "Location lookup timed out. Select your city below.");
       },
       { timeout: 8000, enableHighAccuracy: true }
     );
@@ -828,10 +830,10 @@ function App() {
     }
   };
 
-  // Helper to render an event card with exact deep link & distance badge
+  // Helper to render an event card with spacious layout, clean badge hierarchy & deep link
   const renderEventCard = (ev) => {
-    const hasDistance = ev.distanceKm != null;
-    const isNearbyCity = exactLocation && exactLocation.city && ev.city && ev.city.toLowerCase().includes(exactLocation.city.toLowerCase());
+    const hasDistance = ev.distanceKm != null && exactLocation && !exactLocation.isGlobal;
+    const isNearbyCity = exactLocation && !exactLocation.isGlobal && exactLocation.city && ev.city && ev.city.toLowerCase().includes(exactLocation.city.toLowerCase());
 
     return (
       <div key={ev.event_id} className="event-card">
@@ -846,32 +848,40 @@ function App() {
             )}
             {hasDistance && (
               <span className="badge-pill badge-distance">
-                📍 {ev.distanceKm <= 10 ? `In ${ev.city || "your area"}` : `${ev.distanceKm} km away`}
+                📍 {ev.distanceKm <= 10 ? `In ${ev.city || "your area"}` : `${ev.distanceKm} km`}
               </span>
             )}
             {isNearbyCity && !hasDistance && (
-              <span className="badge-pill badge-local">📍 IN YOUR CITY</span>
-            )}
-            {ev.country && (
-              <span className="badge-pill badge-source">{ev.country}</span>
+              <span className="badge-pill badge-local">📍 LOCAL</span>
             )}
           </div>
 
           <h3 className="card-title">{ev.title}</h3>
-          <p className="card-org">Organized by {ev.organizer_name || "Community Partner"}</p>
+          <p className="card-org">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style={{ opacity: 0.7, flexShrink: 0 }}>
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+            <span>{ev.organizer_name || "Community Partner"}</span>
+          </p>
 
           <div className="card-meta-list">
             <div className="meta-row">
-              <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>Date:</span>
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" style={{ opacity: 0.75, flexShrink: 0 }}>
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
               <span style={{ fontWeight: 600 }}>{formatDate(ev.start_date)} {ev.end_date ? `— ${formatDate(ev.end_date)}` : ""}</span>
             </div>
             <div className="meta-row">
-              <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>Location:</span>
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" style={{ opacity: 0.75, flexShrink: 0 }}>
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+              </svg>
               <span>{ev.city ? `${ev.city}, ${ev.country || ""}` : "Global Virtual"} {ev.venue ? `(${ev.venue})` : ""}</span>
             </div>
             {ev.prize && (
               <div className="meta-row" style={{ color: "var(--color-orange)", fontWeight: 700 }}>
-                <span>Prize:</span>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" style={{ flexShrink: 0 }}>
+                  <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm2.5 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" clipRule="evenodd" />
+                </svg>
                 <span>{ev.prize}</span>
               </div>
             )}
@@ -879,9 +889,6 @@ function App() {
         </div>
 
         <div className="card-footer">
-          <button className="btn-card-details" onClick={() => setSelectedEvent(ev)}>
-            View Pass
-          </button>
           <a
             href={ev.registration_url || ev.event_url || "#"}
             target="_blank"
@@ -891,6 +898,9 @@ function App() {
           >
             Register Official ↗
           </a>
+          <button className="btn-card-details" onClick={() => setSelectedEvent(ev)}>
+            Pass Details
+          </button>
         </div>
       </div>
     );
@@ -975,43 +985,50 @@ function App() {
                     </button>
                   </div>
 
-                  <div className="popover-header" style={{ marginTop: "0.4rem" }}>Exact Locked Location</div>
+                  <div className="popover-header" style={{ marginTop: "0.55rem" }}>Active Location Radar</div>
                   <div className="location-detected-row">
                     <span style={{ fontWeight: 600, color: "var(--text)" }}>
-                      {exactLocation ? exactLocation.label : "Kolkata, India"}
+                      {exactLocation && !exactLocation.isGlobal ? exactLocation.label || exactLocation.city : "🌐 Worldwide"}
                     </span>
                     <button className="btn-redetect" onClick={() => requestExactLocation(true)} disabled={detectingExactLocation}>
-                      {detectingExactLocation ? "Locating..." : "Re-detect GPS"}
+                      {detectingExactLocation ? "Locating..." : "📍 Detect City"}
                     </button>
                   </div>
 
-                  <div className="popover-header" style={{ marginTop: "0.4rem" }}>Quick City Switch</div>
+                  <div className="popover-header" style={{ marginTop: "0.5rem" }}>Quick Hub / Region Switch</div>
                   <select
                     className="dropdown-select"
                     style={{ fontSize: "0.8rem", padding: "0.38rem 0.5rem" }}
-                    value={exactLocation ? exactLocation.city : "Kolkata"}
+                    value={exactLocation ? exactLocation.name || exactLocation.city : "Worldwide"}
                     onChange={(e) => {
                       const matched = POPULAR_CITIES.find(c => c.name === e.target.value);
                       if (matched) {
-                        lockLocation({
-                          lat: matched.lat,
-                          lng: matched.lng,
-                          city: matched.name,
-                          state: "",
-                          country: matched.country,
-                          label: `${matched.name}, ${matched.country}`,
-                          continent: matched.continent
-                        });
+                        if (matched.isGlobal) {
+                          setUserLocation(WORLDWIDE_LOCATION);
+                        } else {
+                          setUserLocation({
+                            lat: matched.lat,
+                            lng: matched.lng,
+                            city: matched.name,
+                            state: "",
+                            country: matched.country,
+                            label: matched.label || `${matched.name}, ${matched.country}`,
+                            continent: matched.continent,
+                            isGlobal: false
+                          });
+                        }
                       }
                     }}
                   >
                     {POPULAR_CITIES.map((c) => (
-                      <option key={c.name} value={c.name}>{c.name}, {c.country}</option>
+                      <option key={c.name} value={c.name}>
+                        {c.isGlobal ? "🌐 Worldwide / Global" : `${c.name}, ${c.country}`}
+                      </option>
                     ))}
                   </select>
 
                   {locationStatusMessage && (
-                    <span style={{ fontSize: "0.72rem", color: "var(--color-orange)", fontWeight: 600, marginTop: "0.2rem" }}>
+                    <span style={{ fontSize: "0.72rem", color: "var(--color-orange)", fontWeight: 600, marginTop: "0.3rem" }}>
                       {locationStatusMessage}
                     </span>
                   )}
@@ -1020,6 +1037,33 @@ function App() {
             </div>
           </div>
         </nav>
+      </div>
+
+      {/* Mobile Horizontal Tab Navigation Strip (Swipeable for all phones) */}
+      <div className="mobile-nav-bar">
+        <div className="mobile-tab-scroll">
+          <button className={"mobile-tab-pill " + (activeTab === "home" ? "active" : "")} onClick={() => navigateTo("home")}>
+            Home
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "explore" ? "active" : "")} onClick={() => navigateTo("explore")}>
+            Explore
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "hackathons" ? "active" : "")} onClick={() => navigateTo("hackathons")}>
+            Hackathons
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "meetups" ? "active" : "")} onClick={() => navigateTo("meetups")}>
+            Meetups
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "nearme" ? "active" : "")} onClick={() => navigateTo("nearme")}>
+            Near Me
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "osint" ? "active" : "")} onClick={() => navigateTo("osint")}>
+            OSINT Tools
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "bots" ? "active" : "")} onClick={() => navigateTo("bots")}>
+            Bots
+          </button>
+        </div>
       </div>
 
       {/* ====================================================================
@@ -1046,11 +1090,24 @@ function App() {
                 Eventador autonomously monitors, verifies, and surfaces upcoming hackathons, meetups, workshops, and OSINT leads worldwide. 100% genuine registration links, zero scams.
               </p>
 
-              {exactLocation && (
-                <div style={{ fontSize: "0.84rem", color: "var(--color-orange)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" }}>
+              {exactLocation && !exactLocation.isGlobal ? (
+                <div style={{ fontSize: "0.84rem", color: "var(--color-orange)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
                   <span>📍 Active Location Radar:</span>
                   <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => navigateTo("nearme")}>
-                    {exactLocation.label}
+                    {exactLocation.label || exactLocation.city}
+                  </span>
+                  <button
+                    onClick={() => setUserLocation(WORLDWIDE_LOCATION)}
+                    style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: "0.78rem", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    (Reset to Worldwide)
+                  </button>
+                </div>
+              ) : (
+                <div style={{ fontSize: "0.84rem", color: "var(--text-muted)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
+                  <span>🌐 Global Tech Radar:</span>
+                  <span style={{ textDecoration: "underline", cursor: "pointer", color: "var(--color-blue)" }} onClick={() => navigateTo("nearme")}>
+                    Worldwide coverage active • Filter by city or region ▾
                   </span>
                 </div>
               )}
@@ -1083,16 +1140,19 @@ function App() {
               </div>
             </div>
 
-            {/* Right Side: Big Orbit Geometry with 3D Animated Cards Deck */}
+            {/* Right Side: Big Centered Orbit Geometry with 3D Animated Cards Deck */}
             <div
               className="hero-orbit-canvas"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
               <div className="hero-big-circle">
+                <div className="hero-mid-circle"></div>
+                <div className="hero-inner-circle"></div>
                 <div className="circle-dot circle-dot-orange"></div>
                 <div className="circle-dot circle-dot-blue"></div>
                 <div className="circle-dot circle-dot-green"></div>
+                <div className="circle-dot circle-dot-purple"></div>
               </div>
 
               <div className="deck-container">
@@ -1345,7 +1405,7 @@ function App() {
       )}
 
       {/* ====================================================================
-          PAGE 5: NEAR ME (Locked Location, Distance Sorting & City Chooser)
+          PAGE 5: NEAR ME (Worldwide Hub & Proximity Radar)
           ==================================================================== */}
       {activeTab === "nearme" && (
         <div className="page-container">
@@ -1360,73 +1420,106 @@ function App() {
             </div>
             <div style={{ flex: 1 }}>
               <h3 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.25rem" }}>
-                Autonomous Exact Location Event Radar
+                {exactLocation && !exactLocation.isGlobal ? `Local Event Radar: ${exactLocation.city}` : "Global Autonomous Event Radar"}
               </h3>
               <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
-                Showing offline and hybrid events sorted by exact distance from your locked location.
+                {exactLocation && !exactLocation.isGlobal
+                  ? `Showing in-person and hybrid events sorted by exact distance from ${exactLocation.city}, ${exactLocation.country}.`
+                  : "Showing developer events worldwide. Detect your city or choose a hub to calculate exact distances."}
               </p>
             </div>
 
-            {/* Persistent Lock Controls (Zero repeated nagging!) */}
+            {/* Radar Controls */}
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-              <span className="badge-pill badge-locked" style={{ padding: "0.35rem 0.75rem", fontSize: "0.8rem" }}>
-                🔒 Locked: {exactLocation ? exactLocation.city || exactLocation.label : "Kolkata, India"}
-              </span>
-              <button
-                className="btn-card-details"
-                onClick={() => setIsEditingLocation(!isEditingLocation)}
-              >
-                {isEditingLocation ? "Close" : "Change City ▾"}
-              </button>
+              {exactLocation && !exactLocation.isGlobal ? (
+                <>
+                  <span className="badge-pill badge-distance" style={{ padding: "0.38rem 0.8rem", fontSize: "0.82rem" }}>
+                    📍 {exactLocation.city}, {exactLocation.country}
+                  </span>
+                  <button
+                    className="btn-card-details"
+                    onClick={() => setIsEditingLocation(!isEditingLocation)}
+                  >
+                    {isEditingLocation ? "Close" : "Change City ▾"}
+                  </button>
+                  <button
+                    className="btn-card-details"
+                    onClick={() => setUserLocation(WORLDWIDE_LOCATION)}
+                  >
+                    Worldwide
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="btn-action-primary"
+                    onClick={() => requestExactLocation(true)}
+                    disabled={detectingExactLocation}
+                  >
+                    {detectingExactLocation ? "Locating..." : "📍 Detect My City"}
+                  </button>
+                  <button
+                    className="btn-card-details"
+                    onClick={() => setIsEditingLocation(!isEditingLocation)}
+                  >
+                    {isEditingLocation ? "Close" : "Choose City ▾"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Inline City Chooser when user clicks Change City */}
+          {/* Inline City Chooser when user clicks Change City / Choose City */}
           {isEditingLocation && (
             <div className="filter-card" style={{ marginBottom: "1.5rem", animation: "popoverFade 0.2s ease" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Choose your tech city to lock:</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.65rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                <span style={{ fontSize: "0.88rem", fontWeight: 700 }}>Choose a Tech Hub or Global Mode:</span>
                 <button
                   className="btn-action-primary"
-                  style={{ fontSize: "0.76rem", padding: "0.35rem 0.75rem" }}
+                  style={{ fontSize: "0.78rem", padding: "0.38rem 0.85rem" }}
                   onClick={() => requestExactLocation(true)}
                   disabled={detectingExactLocation}
                 >
-                  {detectingExactLocation ? "Locating via GPS..." : "📍 Detect Exact GPS"}
+                  {detectingExactLocation ? "Locating via GPS..." : "📍 Detect My City via GPS"}
                 </button>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
                 {POPULAR_CITIES.map((c) => (
                   <button
                     key={c.name}
-                    className={"theme-seg-btn " + (exactLocation && exactLocation.city === c.name ? "active" : "")}
-                    style={{ padding: "0.38rem 0.75rem", border: "1px solid var(--border)", borderRadius: "8px" }}
+                    className={"theme-seg-btn " + ((c.isGlobal && (!exactLocation || exactLocation.isGlobal)) || (exactLocation && exactLocation.city === c.name) ? "active" : "")}
+                    style={{ padding: "0.4rem 0.8rem", border: "1px solid var(--border)", borderRadius: "8px", fontSize: "0.82rem" }}
                     onClick={() => {
-                      lockLocation({
-                        lat: c.lat,
-                        lng: c.lng,
-                        city: c.name,
-                        state: "",
-                        country: c.country,
-                        label: `${c.name}, ${c.country}`,
-                        continent: c.continent
-                      });
+                      if (c.isGlobal) {
+                        setUserLocation(WORLDWIDE_LOCATION);
+                      } else {
+                        setUserLocation({
+                          lat: c.lat,
+                          lng: c.lng,
+                          city: c.name,
+                          state: "",
+                          country: c.country,
+                          label: c.label || `${c.name}, ${c.country}`,
+                          continent: c.continent,
+                          isGlobal: false
+                        });
+                      }
                     }}
                   >
-                    {c.name} ({c.country})
+                    {c.isGlobal ? "🌐 Worldwide / Global" : `${c.name} (${c.country})`}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Quick city filter text bar */}
+          {/* Quick filter text bar */}
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", alignItems: "center" }}>
             <input
               type="text"
               className="search-field"
               style={{ maxWidth: "380px" }}
-              placeholder="Filter nearby events by venue or keyword..."
+              placeholder="Filter nearby events by venue, city, or keyword..."
               value={nearMeSearch}
               onChange={(e) => setNearMeSearch(e.target.value)}
             />
@@ -1439,9 +1532,15 @@ function App() {
 
           <div className="section-header">
             <div>
-              <h2 className="section-title">Nearby In-Person & Hybrid Events</h2>
+              <h2 className="section-title">
+                {exactLocation && !exactLocation.isGlobal ? `Events Near ${exactLocation.city}` : "In-Person & Hybrid Tech Events"}
+              </h2>
               <p className="section-sub">
-                {nearMeEvents.length} events scheduled near <strong>{exactLocation ? exactLocation.label : "your location"}</strong>.
+                {exactLocation && !exactLocation.isGlobal ? (
+                  <span>{nearMeEvents.length} events scheduled near <strong>{exactLocation.label || exactLocation.city}</strong>.</span>
+                ) : (
+                  <span>Showing {nearMeEvents.length} global offline & hybrid tech events.</span>
+                )}
               </p>
             </div>
           </div>
