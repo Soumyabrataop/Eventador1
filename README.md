@@ -8,7 +8,7 @@
 
 > **Core Philosophy:** Trustworthy delivery, not event count. Only genuine, verified events with confirmed first-party registration links reach users. Zero harmful links, zero phishing, zero paid paywalls.
 
-Eventador monitors platforms (Devfolio, Unstop, MLH, HackerEarth, Devpost, Kaggle) and community feeds (Reddit, LinkedIn pointers, tech forums) to deliver verified alerts to **Telegram Channels/Groups** and **Discord Servers**.
+Eventador monitors platforms (Devfolio, Unstop, MLH, HackerEarth, Devpost, Kaggle) and community feeds (Reddit, LinkedIn pointers, tech forums) to deliver verified alerts to **Telegram Channels/Groups**, **Discord Servers**, and **WhatsApp Communities/Channels**.
 
 ## Quickstart (local SQLite dev mode)
 
@@ -85,6 +85,7 @@ check → Dedupe + Classification → DATABASE → (Phase 5) Notify
 | `src/notify/discord.ts` | Discord webhook sender (embeds + link buttons) |
 | `src/notify/dispatch.ts` | Queue + send-time-gated dispatch, corrections |
 | `src/notify/reminders.ts` | Deadline/start reminder queueing |
+| `src/notify/whatsapp.ts` | WhatsApp Cloud API adapter (official API only) |
 | `src/notify/adminBot.ts` | Telegram admin commands (allowlisted chats only) |
 | `src/quality/linkHealth.ts` | Published-link rechecks, host-change response |
 | `src/security/threatIntel.ts` | Pluggable threat-intel (noop/Safe Browsing/cached) |
@@ -107,6 +108,26 @@ check → Dedupe + Classification → DATABASE → (Phase 5) Notify
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID` | 5 | Telegram alerts |
 | `DISCORD_WEBHOOK_URL` | 5 | Discord embeds |
 | `GOOGLE_SAFE_BROWSING_API_KEY` | 7 | Threat-intel (optional) |
+| `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TO_NUMBER` | 9 | WhatsApp Cloud API alerts |
+| `WHATSAPP_TEMPLATE_NAME` | 9 | Optional pre-approved template (recommended for production) |
+
+## WhatsApp setup runbook (official Cloud API)
+
+1. Create a Meta App with the WhatsApp product; complete business verification.
+2. Add a recipient phone number and have it opt in (production messaging
+   requires opt-in; test numbers work in sandbox).
+3. From the App dashboard copy the **Phone number ID** and generate a
+   permanent **access token** (never commit it — `.dev.vars` / CI secrets only).
+4. Set `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TO_NUMBER`.
+   MVP sends owner alerts to one recipient; multi-subscriber support is future.
+5. Recommended: create and get approval for a `WHATSAPP_TEMPLATE_NAME`
+   template with 3 text placeholders (title, links, opt-out), because Meta
+   requires templates for business-initiated messages outside the 24-hour
+   customer-service window. Without it, the adapter sends plain text, which
+   Meta may reject outside that window — failures surface as FAILED rows,
+   never silent drops.
+6. Verify with `npm run notify` (dry-run default; nothing sends).
+
 ## Next phase
 
 **Go-live:** provision channel credentials, flip `DRY_RUN=false` / `LOOP_LIVE=true`,

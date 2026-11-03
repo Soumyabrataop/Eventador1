@@ -52,12 +52,12 @@
                         ↓
               ┌──────────────────┐
               │ Notification     │  PHASE 5. publishingGate() + tier router.
-              │ Engine           │  Telegram / Discord
+              │ Engine           │  Telegram / Discord / (Phase 9) WhatsApp
               └───────┬──────────┘  adapters. Corrections on link change.
                       │
-             ┌────────┴─────────┐
-             ↓                  ↓
-         Telegram            Discord
+             ┌────────┼─────────┐
+             ↓        ↓         ↓
+         Telegram   Discord   WhatsApp (official API only)
 ```
 
 ## 2. Source hierarchy (spec §1)
@@ -120,8 +120,10 @@ verification with domain-verdict persistence, confusable-glyph injection
 defense, extraction-warning propagation, adversarial suite, secret-scan CI —
 plus Store abstraction (SQLite + D1) with parity tests, shared scheduler loop
 for Node CLI and Workers, 30 MVP sources, 56-city query coverage —
+plus WhatsApp Cloud API adapter (official API only) behind the same
+publishing gate, template support, runbook, secret-scan coverage —
 plus persisted india/freshness/source-trust signals, no-churn re-verification
 of published events, subscription filters on targets, Telegram admin webhook,
 scheduler loop tests.
 Defers: live Cron + credentials (ops),
-Telegram/Discord sending (P5), Safe Browsing key wiring (P7).
+Telegram/Discord sending (P5), Safe Browsing key wiring (P7), WhatsApp (P9).
