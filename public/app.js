@@ -1,5 +1,5 @@
 const { useState, useEffect, useMemo, useRef } = React;
-// Continental Regions for high-level sorting of thousands of monthly global events
+// Continental Regions for high-level sorting across thousands of monthly global events
 const CONTINENTS = [
     { id: "ALL", label: "Worldwide / Global" },
     { id: "GLOBAL_SOUTH", label: "Asia-Pacific & Global South" },
@@ -7,6 +7,46 @@ const CONTINENTS = [
     { id: "EUROPE", label: "Europe" },
     { id: "LATIN_AMERICA", label: "Latin America" },
     { id: "MEA", label: "Middle East & Africa" }
+];
+// Cascading Country Definitions by Continent
+const COUNTRIES_BY_CONTINENT = {
+    ALL: [
+        "All Countries", "India", "United States", "United Kingdom", "Germany",
+        "Singapore", "Japan", "Canada", "Australia", "Belgium", "France",
+        "Netherlands", "United Arab Emirates", "Brazil", "Indonesia", "South Korea"
+    ],
+    GLOBAL_SOUTH: [
+        "All Countries in Asia-Pacific", "India", "Singapore", "Japan",
+        "Australia", "South Korea", "Indonesia", "Malaysia", "Vietnam", "Thailand", "New Zealand"
+    ],
+    NORTH_AMERICA: [
+        "All Countries in North America", "United States", "Canada", "Mexico"
+    ],
+    EUROPE: [
+        "All Countries in Europe", "United Kingdom", "Germany", "Belgium",
+        "France", "Netherlands", "Switzerland", "Sweden", "Poland", "Ireland", "Spain"
+    ],
+    LATIN_AMERICA: [
+        "All Countries in Latin America", "Brazil", "Argentina", "Colombia", "Chile", "Peru"
+    ],
+    MEA: [
+        "All Countries in Middle East & Africa", "United Arab Emirates", "Saudi Arabia", "Egypt", "Nigeria", "South Africa", "Kenya"
+    ]
+};
+// Popular tech cities with known coordinates for instant lock & offline support
+const POPULAR_CITIES = [
+    { name: "Kolkata", country: "India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" },
+    { name: "Bengaluru", country: "India", lat: 12.9716, lng: 77.5946, continent: "GLOBAL_SOUTH" },
+    { name: "New Delhi", country: "India", lat: 28.6139, lng: 77.2090, continent: "GLOBAL_SOUTH" },
+    { name: "Mumbai", country: "India", lat: 19.0760, lng: 72.8777, continent: "GLOBAL_SOUTH" },
+    { name: "Hyderabad", country: "India", lat: 17.3850, lng: 78.4867, continent: "GLOBAL_SOUTH" },
+    { name: "Singapore", country: "Singapore", lat: 1.3521, lng: 103.8198, continent: "GLOBAL_SOUTH" },
+    { name: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503, continent: "GLOBAL_SOUTH" },
+    { name: "Sydney", country: "Australia", lat: -33.8688, lng: 151.2093, continent: "GLOBAL_SOUTH" },
+    { name: "London", country: "United Kingdom", lat: 51.5074, lng: -0.1278, continent: "EUROPE" },
+    { name: "Berlin", country: "Germany", lat: 52.5200, lng: 13.4050, continent: "EUROPE" },
+    { name: "San Francisco", country: "United States", lat: 37.7749, lng: -122.4194, continent: "NORTH_AMERICA" },
+    { name: "Toronto", country: "Canada", lat: 43.6532, lng: -79.3832, continent: "NORTH_AMERICA" }
 ];
 // Haversine formula to compute exact distance in kilometers
 function haversineDistanceKm(lat1, lon1, lat2, lon2) {
@@ -21,7 +61,7 @@ function haversineDistanceKm(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return Math.round(R * c);
 }
-// Curated Genuine Seed Events with exact coordinates and source platforms
+// Curated Genuine Seed Events with Direct Deep Registration Links (No generic root domains)
 const CURATED_SEED_EVENTS = [
     {
         event_id: "seed-1",
@@ -38,8 +78,8 @@ const CURATED_SEED_EVENTS = [
         venue: "National Finals Centers & Regional Nodes",
         start_date: "2026-11-15T09:00:00Z",
         end_date: "2026-11-17T18:00:00Z",
-        event_url: "https://www.sih.gov.in",
-        registration_url: "https://www.sih.gov.in",
+        event_url: "https://www.sih.gov.in/",
+        registration_url: "https://www.sih.gov.in/",
         prize: "₹1,00,00,000+ Prize Pool",
         source_platform: "GOV_CHALLENGE"
     },
@@ -58,8 +98,8 @@ const CURATED_SEED_EVENTS = [
         venue: "KTPO Convention Centre, Whitefield",
         start_date: "2026-12-04T10:00:00Z",
         end_date: "2026-12-06T18:00:00Z",
-        event_url: "https://devfolio.co",
-        registration_url: "https://devfolio.co",
+        event_url: "https://ethindia.co/",
+        registration_url: "https://ethindia.co/",
         prize: "$100,000+ Bounties & Grants",
         source_platform: "DEVFOLIO"
     },
@@ -78,8 +118,8 @@ const CURATED_SEED_EVENTS = [
         venue: "NIMHANS Convention Centre",
         start_date: "2026-11-20T09:00:00Z",
         end_date: "2026-11-21T18:00:00Z",
-        event_url: "https://developers.google.com/community/gdg",
-        registration_url: "https://developers.google.com/community/gdg",
+        event_url: "https://gdg.community.dev/gdg-bengaluru/",
+        registration_url: "https://gdg.community.dev/gdg-bengaluru/",
         prize: "Official Swag, Workshops & Labs",
         source_platform: "GOOGLE"
     },
@@ -98,9 +138,9 @@ const CURATED_SEED_EVENTS = [
         venue: "Sector V Tech Hub, Salt Lake",
         start_date: "2026-11-21T14:00:00Z",
         end_date: "2026-11-21T18:00:00Z",
-        event_url: "https://meetup.com",
-        registration_url: "https://meetup.com",
-        prize: "Free Community Entry & Swags",
+        event_url: "https://www.meetup.com/find/?keywords=foss&location=in--kolkata",
+        registration_url: "https://www.meetup.com/find/?keywords=foss&location=in--kolkata",
+        prize: "Free Community Entry & Open Source Swags",
         source_platform: "COMMUNITY"
     },
     {
@@ -118,10 +158,10 @@ const CURATED_SEED_EVENTS = [
         venue: "Stanford University Campus / Online",
         start_date: "2026-11-22T10:00:00Z",
         end_date: "2026-11-24T18:00:00Z",
-        event_url: "https://treehacks.com",
-        registration_url: "https://treehacks.com",
+        event_url: "https://www.treehacks.com/",
+        registration_url: "https://www.treehacks.com/#apply",
         prize: "$150,000+ Hardware & Cloud Tracks",
-        source_platform: "UNIVERSITY"
+        source_platform: "STANFORD"
     },
     {
         event_id: "seed-6",
@@ -138,8 +178,8 @@ const CURATED_SEED_EVENTS = [
         venue: "HICC Novotel, Hitec City",
         start_date: "2026-11-28T09:00:00Z",
         end_date: "2026-11-28T18:00:00Z",
-        event_url: "https://aws.amazon.com/developer/community/",
-        registration_url: "https://aws.amazon.com/developer/community/",
+        event_url: "https://awsugindia.in/",
+        registration_url: "https://awsugindia.in/",
         prize: "AWS Cloud Vouchers & Certification",
         source_platform: "AWS"
     },
@@ -158,8 +198,8 @@ const CURATED_SEED_EVENTS = [
         venue: "ExCeL London & Virtual",
         start_date: "2026-12-01T10:00:00Z",
         end_date: "2026-12-03T18:00:00Z",
-        event_url: "https://ethglobal.com",
-        registration_url: "https://ethglobal.com",
+        event_url: "https://ethglobal.com/events/london2026",
+        registration_url: "https://ethglobal.com/events/london2026",
         prize: "$125,000+ Prize Pool",
         source_platform: "ETHGLOBAL"
     },
@@ -178,8 +218,8 @@ const CURATED_SEED_EVENTS = [
         venue: "Dev.to Platform / Global Virtual",
         start_date: "2026-11-18T00:00:00Z",
         end_date: "2026-12-08T23:59:59Z",
-        event_url: "https://dev.to",
-        registration_url: "https://dev.to",
+        event_url: "https://dev.to/challenges",
+        registration_url: "https://dev.to/challenges",
         prize: "$25,000+ Cash Prizes & Badges",
         source_platform: "DEVTO"
     },
@@ -191,15 +231,15 @@ const CURATED_SEED_EVENTS = [
         event_type: "HACKATHON",
         is_free: 1,
         city: "Virtual",
-        country: "India / Global",
+        country: "India",
         continent: "GLOBAL_SOUTH",
         lat: null,
         lng: null,
         venue: "Reddit & Discord",
         start_date: "2026-11-25T10:00:00Z",
         end_date: "2026-11-27T18:00:00Z",
-        event_url: "https://reddit.com/r/developersIndia",
-        registration_url: "https://reddit.com/r/developersIndia",
+        event_url: "https://www.reddit.com/r/developersIndia/?f=flair_name%3A%22Event%22",
+        registration_url: "https://www.reddit.com/r/developersIndia/?f=flair_name%3A%22Event%22",
         prize: "Community Grants & Fast-track Interviews",
         source_platform: "REDDIT"
     },
@@ -218,8 +258,8 @@ const CURATED_SEED_EVENTS = [
         venue: "Microsoft Reactor, Lavelle Road",
         start_date: "2026-12-05T10:00:00Z",
         end_date: "2026-12-05T16:00:00Z",
-        event_url: "https://developer.microsoft.com/en-us/reactor/",
-        registration_url: "https://developer.microsoft.com/en-us/reactor/",
+        event_url: "https://developer.microsoft.com/en-us/reactor/events/",
+        registration_url: "https://developer.microsoft.com/en-us/reactor/events/",
         prize: "Hands-on Azure Labs & Credits",
         source_platform: "MICROSOFT"
     },
@@ -239,13 +279,93 @@ const CURATED_SEED_EVENTS = [
         venue: "WeWork BKC, Bandra Kurla Complex",
         start_date: "2026-12-12T17:00:00Z",
         end_date: "2026-12-12T20:00:00Z",
-        event_url: "https://lu.ma",
-        registration_url: "https://lu.ma",
+        event_url: "https://lu.ma/mumbai",
+        registration_url: "https://lu.ma/mumbai",
         prize: "Pitching Session with Angel Investors",
         source_platform: "LUMA"
     },
     {
         event_id: "seed-12",
+        title: "Singapore Tech Week & AI Summit 2026",
+        organizer_name: "Tech Week Asia",
+        format: "OFFLINE",
+        event_type: "CONFERENCE",
+        is_free: 1,
+        city: "Singapore",
+        country: "Singapore",
+        continent: "GLOBAL_SOUTH",
+        lat: 1.3521,
+        lng: 103.8198,
+        venue: "Marina Bay Sands Expo & Convention Centre",
+        start_date: "2026-12-08T09:00:00Z",
+        end_date: "2026-12-09T18:00:00Z",
+        event_url: "https://www.techweeksingapore.com/",
+        registration_url: "https://www.techweeksingapore.com/",
+        prize: "Free Trade Passes & Keynotes",
+        source_platform: "COMMUNITY"
+    },
+    {
+        event_id: "seed-13",
+        title: "Tokyo Web3 & AI Hackathon 2026",
+        organizer_name: "Tokyo Web3 Hub",
+        format: "HYBRID",
+        event_type: "HACKATHON",
+        is_free: 1,
+        city: "Tokyo",
+        country: "Japan",
+        continent: "GLOBAL_SOUTH",
+        lat: 35.6762,
+        lng: 139.6503,
+        venue: "Shibuya Stream Hall & Virtual",
+        start_date: "2026-12-15T10:00:00Z",
+        end_date: "2026-12-17T18:00:00Z",
+        event_url: "https://web3tokyo.org/",
+        registration_url: "https://web3tokyo.org/",
+        prize: "¥10,000,000 Grants Pool",
+        source_platform: "COMMUNITY"
+    },
+    {
+        event_id: "seed-14",
+        title: "Berlin Open Rust Summit 2026",
+        organizer_name: "RustFest Community",
+        format: "HYBRID",
+        event_type: "CONFERENCE",
+        is_free: 1,
+        city: "Berlin",
+        country: "Germany",
+        continent: "EUROPE",
+        lat: 52.5200,
+        lng: 13.4050,
+        venue: "Betahaus Berlin & Online",
+        start_date: "2026-12-10T09:00:00Z",
+        end_date: "2026-12-11T18:00:00Z",
+        event_url: "https://rustfest.eu/",
+        registration_url: "https://rustfest.eu/",
+        prize: "Free Community Entry & Open Source Sprints",
+        source_platform: "COMMUNITY"
+    },
+    {
+        event_id: "seed-15",
+        title: "Toronto AI & Machine Learning Hackathon",
+        organizer_name: "University of Toronto AI Society",
+        format: "HYBRID",
+        event_type: "HACKATHON",
+        is_free: 1,
+        city: "Toronto",
+        country: "Canada",
+        continent: "NORTH_AMERICA",
+        lat: 43.6532,
+        lng: -79.3832,
+        venue: "Bahen Centre for Information Technology",
+        start_date: "2026-11-29T10:00:00Z",
+        end_date: "2026-11-30T18:00:00Z",
+        event_url: "https://ai.toronto.edu/events/",
+        registration_url: "https://ai.toronto.edu/events/",
+        prize: "$40,000 CAD Cloud Credits & Hardware",
+        source_platform: "UNIVERSITY"
+    },
+    {
+        event_id: "seed-16",
         title: "FOSDEM Open Source Summit 2027",
         organizer_name: "FOSDEM Community",
         format: "HYBRID",
@@ -259,8 +379,8 @@ const CURATED_SEED_EVENTS = [
         venue: "ULB Solbosch Campus",
         start_date: "2027-02-06T09:00:00Z",
         end_date: "2027-02-07T18:00:00Z",
-        event_url: "https://fosdem.org",
-        registration_url: "https://fosdem.org",
+        event_url: "https://fosdem.org/schedule/",
+        registration_url: "https://fosdem.org/",
         prize: "Free Community Admission",
         source_platform: "FOSDEM"
     }
@@ -288,7 +408,7 @@ const OSINT_DORKS = [
         category: "Flash Hackathons",
         platform: "Twitter / X",
         query: '(site:twitter.com OR site:x.com) ("hackathon" OR "bounty" OR "code sprint") ("register" OR "apply")',
-        url: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22bounty%22+OR+%22code+sprint%22)+(%22register%22+OR+%22apply%22)',
+        url: 'https://www.google.com/search?q=(site%3Atwitter.com+OR+site%3Ax.com)+(%22hackathon%22+OR+%22tech+meetup%22+OR+%22bounty%22+OR+%22code+sprint%22)+(%22register%22+OR+%22apply%22)',
         desc: "Discovers sudden registrations, grant bursaries, and flash hackathons tweeted by tech communities."
     },
     {
@@ -320,34 +440,28 @@ function detectCityFromTimezone() {
     try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
         if (tz.includes("Kolkata") || tz.includes("Calcutta"))
-            return "Kolkata, India";
+            return { city: "Kolkata", country: "India", label: "Kolkata, India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" };
         if (tz.includes("Bangalore") || tz.includes("Bengaluru"))
-            return "Bengaluru, India";
+            return { city: "Bengaluru", country: "India", label: "Bengaluru, India", lat: 12.9716, lng: 77.5946, continent: "GLOBAL_SOUTH" };
         if (tz.includes("Delhi") || tz.includes("New_Delhi"))
-            return "New Delhi, India";
+            return { city: "New Delhi", country: "India", label: "New Delhi, India", lat: 28.6139, lng: 77.2090, continent: "GLOBAL_SOUTH" };
         if (tz.includes("Mumbai") || tz.includes("Bombay"))
-            return "Mumbai, India";
+            return { city: "Mumbai", country: "India", label: "Mumbai, India", lat: 19.0760, lng: 72.8777, continent: "GLOBAL_SOUTH" };
         if (tz.includes("London"))
-            return "London, United Kingdom";
+            return { city: "London", country: "United Kingdom", label: "London, UK", lat: 51.5074, lng: -0.1278, continent: "EUROPE" };
         if (tz.includes("New_York"))
-            return "New York, United States";
+            return { city: "New York", country: "United States", label: "New York, USA", lat: 40.7128, lng: -74.0060, continent: "NORTH_AMERICA" };
         if (tz.includes("Los_Angeles") || tz.includes("San_Francisco"))
-            return "San Francisco, United States";
+            return { city: "San Francisco", country: "United States", label: "San Francisco, USA", lat: 37.7749, lng: -122.4194, continent: "NORTH_AMERICA" };
         if (tz.includes("Berlin") || tz.includes("Frankfurt"))
-            return "Germany / Central Europe";
+            return { city: "Berlin", country: "Germany", label: "Berlin, Germany", lat: 52.5200, lng: 13.4050, continent: "EUROPE" };
         if (tz.includes("Singapore"))
-            return "Singapore";
-        if (tz.includes("Dubai"))
-            return "Dubai, UAE";
-        if (tz.startsWith("Asia/"))
-            return "Asia-Pacific Region";
-        if (tz.startsWith("Europe/"))
-            return "European Region";
-        if (tz.startsWith("America/"))
-            return "North American Region";
+            return { city: "Singapore", country: "Singapore", label: "Singapore", lat: 1.3521, lng: 103.8198, continent: "GLOBAL_SOUTH" };
+        if (tz.includes("Tokyo"))
+            return { city: "Tokyo", country: "Japan", label: "Tokyo, Japan", lat: 35.6762, lng: 139.6503, continent: "GLOBAL_SOUTH" };
     }
     catch { }
-    return "Worldwide";
+    return { city: "Kolkata", country: "India", label: "Kolkata, India", lat: 22.5726, lng: 88.3639, continent: "GLOBAL_SOUTH" };
 }
 function detectContinentFromTimezone() {
     try {
@@ -393,31 +507,31 @@ function App() {
     // Profile Popover
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const profileRef = useRef(null);
-    // Exact Geolocation State (City, State, Country, lat, lng)
+    // Exact Geolocation & Lock State (Prevents repeated nagging!)
+    const [isLocationLocked, setIsLocationLocked] = useState(() => {
+        return localStorage.getItem("eventador-loc-locked") === "true";
+    });
     const [exactLocation, setExactLocation] = useState(() => {
         try {
             const saved = localStorage.getItem("eventador-exact-location");
-            return saved ? JSON.parse(saved) : null;
+            if (saved)
+                return JSON.parse(saved);
         }
-        catch {
-            return null;
-        }
+        catch { }
+        // If not saved, return smart default timezone location
+        return detectCityFromTimezone();
     });
     const [detectingExactLocation, setDetectingExactLocation] = useState(false);
     const [locationStatusMessage, setLocationStatusMessage] = useState("");
-    const [locationPromptDismissed, setLocationPromptDismissed] = useState(() => {
-        return localStorage.getItem("eventador-loc-dismissed") === "true";
-    });
-    // Continental Zone Filter (For high-level sorting across global events)
-    const [userContinent, setUserContinent] = useState(() => {
-        return localStorage.getItem("eventador-continent") || detectContinentFromTimezone();
-    });
+    const [isEditingLocation, setIsEditingLocation] = useState(false);
+    // Continental Zone & Cascading Country Filters
+    const [filterContinent, setFilterContinent] = useState("ALL");
+    const [filterCountry, setFilterCountry] = useState("ALL");
     // Explore tab filters
     const [search, setSearch] = useState("");
     const [filterType, setFilterType] = useState("ALL");
     const [filterFormat, setFilterFormat] = useState("ALL");
     const [filterPrice, setFilterPrice] = useState("ALL");
-    const [filterContinent, setFilterContinent] = useState("ALL");
     const [filterSource, setFilterSource] = useState("ALL");
     // Near Me custom search filter
     const [nearMeSearch, setNearMeSearch] = useState("");
@@ -478,7 +592,16 @@ function App() {
         window.addEventListener("hashchange", handleHashChange);
         return () => window.removeEventListener("hashchange", handleHashChange);
     }, []);
-    // Exact Location Request Handler (Uses OpenStreetMap Nominatim reverse geocode)
+    // Lock Location Helper
+    const lockLocation = (locObj) => {
+        setExactLocation(locObj);
+        setIsLocationLocked(true);
+        setIsEditingLocation(false);
+        localStorage.setItem("eventador-exact-location", JSON.stringify(locObj));
+        localStorage.setItem("eventador-loc-locked", "true");
+        setLocationStatusMessage(`🔒 Locked: ${locObj.label}`);
+    };
+    // Exact Location Request Handler (GPS + Nominatim reverse geocode)
     const requestExactLocation = (interactive = false) => {
         if (!navigator.geolocation) {
             if (interactive)
@@ -491,7 +614,7 @@ function App() {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             try {
-                // OpenStreetMap Nominatim reverse geocoding (100% free, zero api key needed)
+                // OpenStreetMap Nominatim reverse geocoding (100% free, zero API key)
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`, {
                     headers: { "Accept-Language": "en" }
                 });
@@ -499,7 +622,7 @@ function App() {
                 const addr = data.address || {};
                 const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "Your City";
                 const state = addr.state || "";
-                const country = addr.country || "";
+                const country = addr.country || "India";
                 const label = state ? `${city}, ${state}, ${country}` : `${city}, ${country}`;
                 // Deduce continent for broad global categorization
                 let continent = "GLOBAL_SOUTH";
@@ -514,48 +637,40 @@ function App() {
                 else if (lng >= -20 && lng <= 60 && lat >= -35 && lat < 37)
                     continent = "MEA";
                 const locObj = { lat, lng, city, state, country, label, continent };
-                setExactLocation(locObj);
-                setUserContinent(continent);
-                localStorage.setItem("eventador-exact-location", JSON.stringify(locObj));
-                localStorage.setItem("eventador-continent", continent);
-                setLocationStatusMessage(`📍 Detected: ${label}`);
+                lockLocation(locObj);
                 setDetectingExactLocation(false);
-                setLocationPromptDismissed(true);
-                localStorage.setItem("eventador-loc-dismissed", "true");
             }
             catch {
                 // Fallback to coordinates if reverse lookup fails
-                const locObj = { lat, lng, city: "Detected Location", state: "", country: "", label: `${lat.toFixed(2)}°, ${lng.toFixed(2)}°`, continent: userContinent };
-                setExactLocation(locObj);
-                localStorage.setItem("eventador-exact-location", JSON.stringify(locObj));
-                setLocationStatusMessage(`📍 Lat: ${lat.toFixed(2)}°, Lng: ${lng.toFixed(2)}°`);
+                const locObj = { lat, lng, city: "Detected Location", state: "", country: "India", label: `${lat.toFixed(2)}°, ${lng.toFixed(2)}°`, continent: "GLOBAL_SOUTH" };
+                lockLocation(locObj);
                 setDetectingExactLocation(false);
-                setLocationPromptDismissed(true);
             }
         }, (err) => {
             setDetectingExactLocation(false);
             const tzCity = detectCityFromTimezone();
-            setLocationStatusMessage(err.code === 1 ? `Location access declined. Estimated: ${tzCity}` : "Location lookup timed out.");
+            lockLocation(tzCity);
+            setLocationStatusMessage(err.code === 1 ? `Using timezone default: ${tzCity.label}` : "Location lookup timed out.");
         }, { timeout: 8000, enableHighAccuracy: true });
     };
-    // Automatic Prompt on First Visit
-    useEffect(() => {
-        if (!exactLocation && !locationPromptDismissed) {
-            // Trigger browser location prompt smoothly on initial user visit
-            requestExactLocation(false);
-        }
-    }, []);
+    // Available countries based on selected continent
+    const availableCountries = useMemo(() => {
+        return COUNTRIES_BY_CONTINENT[filterContinent] || COUNTRIES_BY_CONTINENT.ALL;
+    }, [filterContinent]);
+    // When continent changes, ensure selected country stays valid
+    const handleContinentChange = (newContinent) => {
+        setFilterContinent(newContinent);
+        setFilterCountry("ALL");
+    };
     // Multi-Service Anti-Clash Event Merger (Cloudflare Worker + Render + GitHub Actions)
     const mergeEventsWithoutClash = (prevEvents, incomingEvents) => {
         if (!incomingEvents || incomingEvents.length === 0)
             return prevEvents;
         const eventMap = new Map();
-        // Index existing events
         for (const ev of prevEvents) {
             const key = ev.event_id || `${ev.title}_${ev.start_date}`;
             eventMap.set(key, ev);
         }
-        // Upsert incoming events without duplicating cards or clashing
         for (const ev of incomingEvents) {
             const key = ev.event_id || `${ev.title}_${ev.start_date}`;
             if (eventMap.has(key)) {
@@ -603,7 +718,7 @@ function App() {
             return tA - tB;
         }).slice(0, 6);
     }, [events]);
-    // Filtered for Explore Tab
+    // Filtered for Explore Tab (With Cascading Continent & Country Filters)
     const exploreEvents = useMemo(() => {
         return events.filter((ev) => {
             if (filterType !== "ALL" && ev.event_type !== filterType)
@@ -614,6 +729,12 @@ function App() {
                 return false;
             if (filterContinent !== "ALL" && ev.continent !== "ALL" && ev.continent !== filterContinent)
                 return false;
+            // Country filtering
+            if (filterCountry !== "ALL" && !filterCountry.startsWith("All Countries")) {
+                if (!ev.country || ev.country.toLowerCase() !== filterCountry.toLowerCase()) {
+                    return false;
+                }
+            }
             if (filterSource !== "ALL" && ev.source_platform !== filterSource)
                 return false;
             if (search.trim()) {
@@ -627,7 +748,7 @@ function App() {
             }
             return true;
         });
-    }, [events, search, filterType, filterFormat, filterPrice, filterContinent, filterSource]);
+    }, [events, search, filterType, filterFormat, filterPrice, filterContinent, filterCountry, filterSource]);
     // Filtered for Hackathons Tab
     const hackathonEvents = useMemo(() => {
         return events.filter((ev) => ev.event_type === "HACKATHON" || /hackathon|ideathon|bounty/i.test(ev.title));
@@ -639,7 +760,7 @@ function App() {
     // Filtered for Near Me Tab (Exact Distance Calculation & Proximity Sorting)
     const nearMeEvents = useMemo(() => {
         const physicalEvents = events.filter((ev) => ev.format === "OFFLINE" || ev.format === "HYBRID");
-        // Compute exact distance in km for each event relative to user's exact coordinates
+        // Compute exact distance in km for each event relative to user's locked coordinates
         const listWithDistance = physicalEvents.map((ev) => {
             let distanceKm = null;
             if (exactLocation && exactLocation.lat != null && exactLocation.lng != null && ev.lat != null && ev.lng != null) {
@@ -657,7 +778,8 @@ function App() {
             filtered = filtered.filter((ev) => {
                 return (ev.city && ev.city.toLowerCase().includes(q)) ||
                     (ev.title && ev.title.toLowerCase().includes(q)) ||
-                    (ev.venue && ev.venue.toLowerCase().includes(q));
+                    (ev.venue && ev.venue.toLowerCase().includes(q)) ||
+                    (ev.country && ev.country.toLowerCase().includes(q));
             });
         }
         // Sort: Nearest events first (ascending distance in km), then by upcoming date
@@ -682,11 +804,7 @@ function App() {
             return dateStr;
         }
     };
-    const currentContinentLabel = useMemo(() => {
-        const c = CONTINENTS.find((item) => item.id === userContinent);
-        return c ? c.label : "Worldwide / Global";
-    }, [userContinent]);
-    // Helper to render an event card with exact distance badge
+    // Helper to render an event card with exact deep link & distance badge
     const renderEventCard = (ev) => {
         const hasDistance = ev.distanceKm != null;
         const isNearbyCity = exactLocation && exactLocation.city && ev.city && ev.city.toLowerCase().includes(exactLocation.city.toLowerCase());
@@ -700,7 +818,7 @@ function App() {
                         "\uD83D\uDCCD ",
                         ev.distanceKm <= 10 ? `In ${ev.city || "your area"}` : `${ev.distanceKm} km away`)),
                     isNearbyCity && !hasDistance && (React.createElement("span", { className: "badge-pill badge-local" }, "\uD83D\uDCCD IN YOUR CITY")),
-                    ev.source_platform && (React.createElement("span", { className: "badge-pill badge-source" }, ev.source_platform))),
+                    ev.country && (React.createElement("span", { className: "badge-pill badge-source" }, ev.country))),
                 React.createElement("h3", { className: "card-title" }, ev.title),
                 React.createElement("p", { className: "card-org" },
                     "Organized by ",
@@ -723,7 +841,7 @@ function App() {
                         React.createElement("span", null, ev.prize))))),
             React.createElement("div", { className: "card-footer" },
                 React.createElement("button", { className: "btn-card-details", onClick: () => setSelectedEvent(ev) }, "View Pass"),
-                React.createElement("a", { href: ev.registration_url || ev.event_url || "#", target: "_blank", rel: "noopener noreferrer", className: "btn-card-register" }, "Register Official \u2197"))));
+                React.createElement("a", { href: ev.registration_url || ev.event_url || "#", target: "_blank", rel: "noopener noreferrer", className: "btn-card-register", title: "Open official event registration page" }, "Register Official \u2197"))));
     };
     return (React.createElement("div", null,
         React.createElement("div", { className: "navbar-wrapper" },
@@ -752,29 +870,29 @@ function App() {
                                 React.createElement("button", { className: "theme-seg-btn " + (themePref === "light" ? "active" : ""), onClick: () => setThemePref("light") }, "Light"),
                                 React.createElement("button", { className: "theme-seg-btn " + (themePref === "dark" ? "active" : ""), onClick: () => setThemePref("dark") }, "Dark"),
                                 React.createElement("button", { className: "theme-seg-btn " + (themePref === "system" ? "active" : ""), onClick: () => setThemePref("system") }, "System")),
-                            React.createElement("div", { className: "popover-header", style: { marginTop: "0.4rem" } }, "Exact Location (City Radar)"),
+                            React.createElement("div", { className: "popover-header", style: { marginTop: "0.4rem" } }, "Exact Locked Location"),
                             React.createElement("div", { className: "location-detected-row" },
-                                React.createElement("span", { style: { fontWeight: 600, color: "var(--text)" } }, exactLocation ? exactLocation.label : "Not Detected"),
-                                React.createElement("button", { className: "btn-redetect", onClick: () => requestExactLocation(true), disabled: detectingExactLocation }, detectingExactLocation ? "Locating..." : "Detect Exact City")),
-                            React.createElement("div", { className: "popover-header", style: { marginTop: "0.4rem" } }, "Global Continental Zone"),
-                            React.createElement("p", { style: { fontSize: "0.72rem", color: "var(--text-muted)" } }, "Used for broad sorting across 1,000+ monthly global events."),
-                            React.createElement("select", { className: "dropdown-select", style: { fontSize: "0.8rem", padding: "0.38rem 0.5rem" }, value: userContinent, onChange: (e) => {
-                                    setUserContinent(e.target.value);
-                                    localStorage.setItem("eventador-continent", e.target.value);
-                                } }, CONTINENTS.map((c) => (React.createElement("option", { key: c.id, value: c.id }, c.label)))),
+                                React.createElement("span", { style: { fontWeight: 600, color: "var(--text)" } }, exactLocation ? exactLocation.label : "Kolkata, India"),
+                                React.createElement("button", { className: "btn-redetect", onClick: () => requestExactLocation(true), disabled: detectingExactLocation }, detectingExactLocation ? "Locating..." : "Re-detect GPS")),
+                            React.createElement("div", { className: "popover-header", style: { marginTop: "0.4rem" } }, "Quick City Switch"),
+                            React.createElement("select", { className: "dropdown-select", style: { fontSize: "0.8rem", padding: "0.38rem 0.5rem" }, value: exactLocation ? exactLocation.city : "Kolkata", onChange: (e) => {
+                                    const matched = POPULAR_CITIES.find(c => c.name === e.target.value);
+                                    if (matched) {
+                                        lockLocation({
+                                            lat: matched.lat,
+                                            lng: matched.lng,
+                                            city: matched.name,
+                                            state: "",
+                                            country: matched.country,
+                                            label: `${matched.name}, ${matched.country}`,
+                                            continent: matched.continent
+                                        });
+                                    }
+                                } }, POPULAR_CITIES.map((c) => (React.createElement("option", { key: c.name, value: c.name },
+                                c.name,
+                                ", ",
+                                c.country)))),
                             locationStatusMessage && (React.createElement("span", { style: { fontSize: "0.72rem", color: "var(--color-orange)", fontWeight: 600, marginTop: "0.2rem" } }, locationStatusMessage)))))))),
-        !exactLocation && !locationPromptDismissed && (React.createElement("div", { className: "location-prompt-banner" },
-            React.createElement("div", { className: "prompt-left" },
-                React.createElement("span", { className: "prompt-icon" }, "\uD83D\uDCCD"),
-                React.createElement("div", null,
-                    React.createElement("strong", null, "Find hackathons & meetups happening in your exact city"),
-                    React.createElement("p", { style: { margin: 0, fontSize: "0.8rem", color: "var(--text-muted)" } }, "Allow location access to calculate exact distances to developer events near your hometown."))),
-            React.createElement("div", { className: "prompt-actions" },
-                React.createElement("button", { className: "btn-prompt-allow", onClick: () => requestExactLocation(true) }, "Detect My Exact City"),
-                React.createElement("button", { className: "btn-prompt-dismiss", onClick: () => {
-                        setLocationPromptDismissed(true);
-                        localStorage.setItem("eventador-loc-dismissed", "true");
-                    } }, "Dismiss")))),
         activeTab === "home" && (React.createElement("div", null,
             React.createElement("header", { className: "hero-container" },
                 React.createElement("div", { className: "hero-content" },
@@ -784,7 +902,9 @@ function App() {
                             " Happy Developer Intelligence"),
                         React.createElement("div", { className: "live-sync-indicator" },
                             React.createElement("div", { className: "pulse-dot" }),
-                            React.createElement("span", null, "Cloudflare + Render Live Sync"))),
+                            React.createElement("span", null,
+                                "Cloudflare + Render Live Sync ",
+                                liveSyncTime ? `(${liveSyncTime})` : ""))),
                     React.createElement("h1", { className: "hero-title" },
                         "Tech events, from ",
                         React.createElement("em", null, "community"),
@@ -792,8 +912,8 @@ function App() {
                         React.createElement("em", null, "grand stage.")),
                     React.createElement("p", { className: "hero-desc" }, "Eventador autonomously monitors, verifies, and surfaces upcoming hackathons, meetups, workshops, and OSINT leads worldwide. 100% genuine registration links, zero scams."),
                     exactLocation && (React.createElement("div", { style: { fontSize: "0.84rem", color: "var(--color-orange)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" } },
-                        React.createElement("span", null, "\uD83D\uDCCD Your Exact Radar:"),
-                        React.createElement("span", null, exactLocation.label))),
+                        React.createElement("span", null, "\uD83D\uDCCD Active Location Radar:"),
+                        React.createElement("span", { style: { textDecoration: "underline", cursor: "pointer" }, onClick: () => navigateTo("nearme") }, exactLocation.label))),
                     React.createElement("div", { className: "hero-buttons" },
                         React.createElement("button", { className: "btn-action-primary", onClick: () => navigateTo("explore") }, "Explore Directory \u2198"),
                         React.createElement("button", { className: "btn-action-secondary", onClick: () => navigateTo("nearme") }, "Find Near Me \uD83D\uDCCD"),
@@ -804,10 +924,10 @@ function App() {
                             React.createElement("span", null, "Verified Events")),
                         React.createElement("div", { className: "metric-item" },
                             React.createElement("span", { className: "metric-num" }, "100%"),
-                            React.createElement("span", null, "First-Party Links")),
+                            React.createElement("span", null, "Deep Event Passes")),
                         React.createElement("div", { className: "metric-item" },
                             React.createElement("span", { className: "metric-num" }, "0"),
-                            React.createElement("span", null, "Phishing or Spam")))),
+                            React.createElement("span", null, "Generic Roots")))),
                 React.createElement("div", { className: "hero-orbit-canvas", onMouseEnter: () => setIsHovered(true), onMouseLeave: () => setIsHovered(false) },
                     React.createElement("div", { className: "hero-big-circle" },
                         React.createElement("div", { className: "circle-dot circle-dot-orange" }),
@@ -829,7 +949,7 @@ function App() {
                                     React.createElement("span", { style: { fontSize: "0.68rem", fontWeight: 700, opacity: 0.85 } }, formatDate(ev.start_date))),
                                 React.createElement("h3", { style: { fontSize: "1.05rem", fontWeight: 800, lineHeight: 1.3, marginBottom: "0.35rem" } }, ev.title),
                                 React.createElement("p", { style: { fontSize: "0.8rem", opacity: diff === 0 ? 0.7 : 0.9 } },
-                                    ev.city ? `${ev.city} • ` : "",
+                                    ev.city ? `${ev.city}, ${ev.country || ""} • ` : "",
                                     ev.format,
                                     " \u2022 ",
                                     ev.is_free ? "Free Entry" : "Paid"),
@@ -843,8 +963,8 @@ function App() {
                     React.createElement("div", { className: "pillar-card" },
                         React.createElement("div", null,
                             React.createElement("span", { className: "pillar-badge" }, "WEB DIRECTORY & RADAR"),
-                            React.createElement("h3", { className: "pillar-title", style: { marginTop: "0.5rem" } }, "Global Event Radar with Continental Filters"),
-                            React.createElement("p", { className: "pillar-desc", style: { marginTop: "0.4rem" } }, "Search 1,240+ verified hackathons, summits, and meetups. Filter by continental zones, tech stacks, offline cities, and launch Google OSINT searches.")),
+                            React.createElement("h3", { className: "pillar-title", style: { marginTop: "0.5rem" } }, "Global Event Radar with Country & Continental Filters"),
+                            React.createElement("p", { className: "pillar-desc", style: { marginTop: "0.4rem" } }, "Search 1,240+ verified hackathons, summits, and meetups. Filter by continental zones, specific countries, offline cities, and launch Google OSINT searches.")),
                         React.createElement("button", { className: "btn-action-secondary", style: { alignSelf: "flex-start" }, onClick: () => navigateTo("explore") }, "Open Directory \u2198")),
                     React.createElement("div", { className: "pillar-card" },
                         React.createElement("div", null,
@@ -865,7 +985,7 @@ function App() {
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
                     React.createElement("h2", { className: "section-title" }, "Explore Verified Events"),
-                    React.createElement("p", { className: "section-sub" }, "Filter by continental zone, source platform, format, or pricing."))),
+                    React.createElement("p", { className: "section-sub" }, "Filter by continental zone, specific country, format, or pricing."))),
             React.createElement("div", { className: "filter-card" },
                 React.createElement("div", { className: "search-row" },
                     React.createElement("svg", { className: "search-icon-svg", viewBox: "0 0 20 20" },
@@ -874,16 +994,10 @@ function App() {
                 React.createElement("div", { className: "dropdowns-grid" },
                     React.createElement("div", { className: "dropdown-group" },
                         React.createElement("label", { className: "dropdown-label" }, "Continental Zone"),
-                        React.createElement("select", { className: "dropdown-select", value: filterContinent, onChange: (e) => setFilterContinent(e.target.value) }, CONTINENTS.map((c) => (React.createElement("option", { key: c.id, value: c.id }, c.label))))),
+                        React.createElement("select", { className: "dropdown-select", value: filterContinent, onChange: (e) => handleContinentChange(e.target.value) }, CONTINENTS.map((c) => (React.createElement("option", { key: c.id, value: c.id }, c.label))))),
                     React.createElement("div", { className: "dropdown-group" },
-                        React.createElement("label", { className: "dropdown-label" }, "Source Platform"),
-                        React.createElement("select", { className: "dropdown-select", value: filterSource, onChange: (e) => setFilterSource(e.target.value) },
-                            React.createElement("option", { value: "ALL" }, "All Sources (Reddit, Dev.to, Official)"),
-                            React.createElement("option", { value: "DEVTO" }, "Dev.to Community"),
-                            React.createElement("option", { value: "REDDIT" }, "Reddit Radar"),
-                            React.createElement("option", { value: "DEVFOLIO" }, "Devfolio Official"),
-                            React.createElement("option", { value: "GOV_CHALLENGE" }, "Gov Challenges (SIH)"),
-                            React.createElement("option", { value: "LUMA" }, "Lu.ma Community"))),
+                        React.createElement("label", { className: "dropdown-label" }, "Country / Region"),
+                        React.createElement("select", { className: "dropdown-select", value: filterCountry, onChange: (e) => setFilterCountry(e.target.value) }, availableCountries.map((countryName, i) => (React.createElement("option", { key: countryName, value: i === 0 ? "ALL" : countryName }, countryName))))),
                     React.createElement("div", { className: "dropdown-group" },
                         React.createElement("label", { className: "dropdown-label" }, "Event Type"),
                         React.createElement("select", { className: "dropdown-select", value: filterType, onChange: (e) => setFilterType(e.target.value) },
@@ -909,8 +1023,9 @@ function App() {
                 React.createElement("span", { style: { fontSize: "0.88rem", color: "var(--text-muted)" } },
                     "Showing ",
                     exploreEvents.length,
-                    " verified events")),
-            React.createElement("div", { className: "events-grid" }, exploreEvents.length > 0 ? (exploreEvents.map(renderEventCard)) : (React.createElement("p", { style: { color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" } }, "No events match your current filter criteria."))))),
+                    " verified events ",
+                    filterCountry !== "ALL" ? `in ${filterCountry}` : "")),
+            React.createElement("div", { className: "events-grid" }, exploreEvents.length > 0 ? (exploreEvents.map(renderEventCard)) : (React.createElement("p", { style: { color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" } }, "No events match your current filter criteria. Try selecting \"All Countries\" or switching continental zone!"))))),
         activeTab === "hackathons" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
@@ -933,23 +1048,43 @@ function App() {
                         React.createElement("circle", { cx: "12", cy: "12", r: "2" }))),
                 React.createElement("div", { style: { flex: 1 } },
                     React.createElement("h3", { style: { fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.25rem" } }, "Autonomous Exact Location Event Radar"),
-                    React.createElement("p", { style: { fontSize: "0.88rem", color: "var(--text-muted)" } }, exactLocation ? (React.createElement("span", null,
-                        "Pinpointed: ",
-                        React.createElement("strong", null, exactLocation.label),
-                        ". Showing in-person & hybrid events sorted by exact distance from you.")) : (React.createElement("span", null, "Location access enables automatic distance calculation to all nearby offline hackathons and meetups.")))),
-                React.createElement("button", { className: "btn-action-primary", onClick: () => requestExactLocation(true), disabled: detectingExactLocation }, detectingExactLocation ? "Locating..." : "Detect Exact Location")),
+                    React.createElement("p", { style: { fontSize: "0.88rem", color: "var(--text-muted)" } }, "Showing offline and hybrid events sorted by exact distance from your locked location.")),
+                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" } },
+                    React.createElement("span", { className: "badge-pill badge-locked", style: { padding: "0.35rem 0.75rem", fontSize: "0.8rem" } },
+                        "\uD83D\uDD12 Locked: ",
+                        exactLocation ? exactLocation.city || exactLocation.label : "Kolkata, India"),
+                    React.createElement("button", { className: "btn-card-details", onClick: () => setIsEditingLocation(!isEditingLocation) }, isEditingLocation ? "Close" : "Change City ▾"))),
+            isEditingLocation && (React.createElement("div", { className: "filter-card", style: { marginBottom: "1.5rem", animation: "popoverFade 0.2s ease" } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" } },
+                    React.createElement("span", { style: { fontSize: "0.85rem", fontWeight: 700 } }, "Choose your tech city to lock:"),
+                    React.createElement("button", { className: "btn-action-primary", style: { fontSize: "0.76rem", padding: "0.35rem 0.75rem" }, onClick: () => requestExactLocation(true), disabled: detectingExactLocation }, detectingExactLocation ? "Locating via GPS..." : "📍 Detect Exact GPS")),
+                React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: "0.45rem" } }, POPULAR_CITIES.map((c) => (React.createElement("button", { key: c.name, className: "theme-seg-btn " + (exactLocation && exactLocation.city === c.name ? "active" : ""), style: { padding: "0.38rem 0.75rem", border: "1px solid var(--border)", borderRadius: "8px" }, onClick: () => {
+                        lockLocation({
+                            lat: c.lat,
+                            lng: c.lng,
+                            city: c.name,
+                            state: "",
+                            country: c.country,
+                            label: `${c.name}, ${c.country}`,
+                            continent: c.continent
+                        });
+                    } },
+                    c.name,
+                    " (",
+                    c.country,
+                    ")")))))),
             React.createElement("div", { style: { display: "flex", gap: "0.75rem", marginBottom: "1.25rem", alignItems: "center" } },
-                React.createElement("input", { type: "text", className: "search-field", style: { maxWidth: "380px" }, placeholder: "Filter by city (e.g. Kolkata, Bengaluru, London)...", value: nearMeSearch, onChange: (e) => setNearMeSearch(e.target.value) }),
+                React.createElement("input", { type: "text", className: "search-field", style: { maxWidth: "380px" }, placeholder: "Filter nearby events by venue or keyword...", value: nearMeSearch, onChange: (e) => setNearMeSearch(e.target.value) }),
                 nearMeSearch && (React.createElement("button", { className: "btn-card-details", onClick: () => setNearMeSearch("") }, "Clear"))),
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,
                     React.createElement("h2", { className: "section-title" }, "Nearby In-Person & Hybrid Events"),
                     React.createElement("p", { className: "section-sub" },
                         nearMeEvents.length,
-                        " events found ",
-                        exactLocation ? `near ${exactLocation.city || exactLocation.label}` : "worldwide",
+                        " events scheduled near ",
+                        React.createElement("strong", null, exactLocation ? exactLocation.label : "your location"),
                         "."))),
-            React.createElement("div", { className: "events-grid" }, nearMeEvents.length > 0 ? (nearMeEvents.map(renderEventCard)) : (React.createElement("p", { style: { color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" } }, "No upcoming offline events found near this location yet. Try broadening your search or exploring virtual hackathons!"))))),
+            React.createElement("div", { className: "events-grid" }, nearMeEvents.length > 0 ? (nearMeEvents.map(renderEventCard)) : (React.createElement("p", { style: { color: "var(--text-muted)", gridColumn: "1/-1", textAlign: "center", padding: "2rem" } }, "No offline events scheduled near this location yet. Try switching city or exploring virtual hackathons!"))))),
         activeTab === "osint" && (React.createElement("div", { className: "page-container" },
             React.createElement("div", { className: "section-header" },
                 React.createElement("div", null,

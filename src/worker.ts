@@ -103,9 +103,10 @@ export default {
         const type = url.searchParams.get("type");
         const isFree = url.searchParams.get("is_free");
         const city = url.searchParams.get("city");
+        const country = url.searchParams.get("country");
         const search = url.searchParams.get("search");
 
-        let sql = `SELECT event_id,title,organizer_name,categories,format,city,venue,timezone,
+        let sql = `SELECT event_id,title,organizer_name,categories,format,city,country,venue,timezone,
                           start_date,end_date,registration_deadline,registration_status,
                           event_url,registration_url,event_type,is_free,price_detail,
                           verification_decision,verification_score,publishing_tier,prize
@@ -124,6 +125,10 @@ export default {
         if (isFree !== null && isFree !== "ALL") {
           sql += " AND is_free = ?";
           params.push(Number(isFree));
+        }
+        if (country && country !== "ALL") {
+          sql += " AND country = ?";
+          params.push(country);
         }
         if (city && city !== "ALL") {
           sql += " AND (city LIKE ? OR city_original LIKE ?)";
