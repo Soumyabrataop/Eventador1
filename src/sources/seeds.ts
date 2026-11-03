@@ -76,9 +76,17 @@ export const MVP_SOURCES: SourceSeed[] = [
   // ---- Community / Social Feeds (L6, public RSS) ----
   { slug: "reddit-hackathons", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/hackathons", feedUrl: "https://www.reddit.com/r/hackathons/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
   { slug: "reddit-developersindia", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/developersIndia", feedUrl: "https://www.reddit.com/r/developersIndia/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "reddit-webdev", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/webdev", feedUrl: "https://www.reddit.com/r/webdev/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "reddit-machinelearning", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/MachineLearning", feedUrl: "https://www.reddit.com/r/MachineLearning/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "reddit-cybersecurity", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/cybersecurity", feedUrl: "https://www.reddit.com/r/cybersecurity/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "reddit-learnprogramming", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://www.reddit.com/r/learnprogramming", feedUrl: "https://www.reddit.com/r/learnprogramming/.rss", trustScore: 45, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "devto-hackathons", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://dev.to/t/hackathon", feedUrl: "https://dev.to/feed/tag/hackathon", trustScore: 50, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "hashnode-hackathons", kind: "rss", sourceType: "COMMUNITY", level: 6, baseUrl: "https://hashnode.com/n/hackathon", feedUrl: "https://hashnode.com/n/hackathon/rss", trustScore: 50, enabled: true, rateLimitMs: MEDIUM },
 
   // ---- OSINT Social Media & Search Dorks (L6) ----
   { slug: "osint-dork-radar", kind: "osint", sourceType: "SOCIAL", level: 6, baseUrl: null, trustScore: 50, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "osint-hacker-news", kind: "osint", sourceType: "SOCIAL", level: 6, baseUrl: null, trustScore: 50, enabled: true, rateLimitMs: MEDIUM },
+  { slug: "osint-indiehackers", kind: "osint", sourceType: "SOCIAL", level: 6, baseUrl: null, trustScore: 50, enabled: true, rateLimitMs: MEDIUM },
 
   // ---- Search discovery (L7, disabled until configured) ----
   { slug: "search-api", kind: "search", sourceType: "SEARCH", level: 7, baseUrl: null, trustScore: 40, enabled: false, rateLimitMs: FAST },
