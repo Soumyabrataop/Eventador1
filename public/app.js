@@ -452,6 +452,22 @@ const OSINT_DORKS = [
         query: 'site:github.com in:readme ("upcoming hackathon" OR "tech-events" OR "dev-calendar")',
         url: 'https://www.google.com/search?q=site%3Agithub.com+in%3Areadme+(%22upcoming+hackathon%22+OR+%22tech-events%22+OR+%22dev-calendar%22)',
         desc: "Finds open-source student hackathons and community calendars maintained directly in GitHub readmes."
+    },
+    {
+        title: "Hacker News Event Postings",
+        category: "Startup & Tech Events",
+        platform: "Hacker News",
+        query: 'site:news.ycombinator.com ("hackathon" OR "meetup" OR "Show HN")',
+        url: 'https://www.google.com/search?q=site%3Anews.ycombinator.com+(%22hackathon%22+OR+%22meetup%22+OR+%22Show+HN%22)',
+        desc: "Discovers unlisted hackathons, launch events, and casual meetups posted by startup founders and engineers on HN."
+    },
+    {
+        title: "IndieHackers Meetups",
+        category: "Founder Meetups",
+        platform: "IndieHackers",
+        query: 'site:indiehackers.com ("meetup" OR "hackathon")',
+        url: 'https://www.google.com/search?q=site%3Aindiehackers.com+(%22meetup%22+OR+%22hackathon%22)',
+        desc: "Finds local bootstrapped founder meetups, demo days, and weekend build-a-thons from the IndieHackers community."
     }
 ];
 function detectCityFromTimezone() {
