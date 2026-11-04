@@ -520,11 +520,323 @@ function detectContinentFromTimezone() {
     catch { }
     return "ALL";
 }
+// Origin of the Cloudflare Worker that serves the read-only JSON API. The Pages
+// portal and the Worker live on different origins, so research endpoints use the
+// same absolute base as the live events fetch below (never a relative path).
+const API_BASE = "https://eventador.eventador.workers.dev";
+// Research stat cards. Labels map 1:1 to the /api/research/stats metrics keys; no
+// number is ever computed or invented on the client — each value comes straight
+// from the endpoint (Req 5.2, 7.1).
+const RESEARCH_STAT_CARDS = [
+    { key: "discovered", label: "Discovered", hint: "Leads found by discovery (not proof)" },
+    { key: "verified", label: "Verified", hint: "Passed verification scoring" },
+    { key: "published", label: "Published", hint: "Live on the public portal" },
+    { key: "rejected", label: "Rejected", hint: "Failed verification or safety checks" },
+    { key: "suspicious", label: "Suspicious", hint: "Flagged for closer review" },
+    { key: "needs_review", label: "Needs review", hint: "Awaiting a human decision" },
+    { key: "broken_links", label: "Broken links", hint: "Links in a problem security state" }
+];
+// Decision enums (Req 2.4). The badge renders ONLY these literals; a decision
+// outside this set is shown verbatim but styled neutrally. No "100% safe" or
+// "guaranteed" language ever appears.
+const DECISION_TONE = {
+    VERIFIED_OFFICIAL: "good",
+    VERIFIED_BY_MULTIPLE_SOURCES: "good",
+    LIKELY_LEGITIMATE: "warn",
+    UNVERIFIED: "warn",
+    SUSPICIOUS: "bad",
+    REJECTED: "bad"
+};
+// Exact fallback sentence, copied verbatim from the notification templates so the
+// portal and the alerts say the same thing (Req 2.5).
+const REGISTRATION_UNVERIFIED_SENTENCE = "Registration link could not be independently verified.";
+// Source levels L1–L4 are authoritative/confirming tiers; L5–L7 are discovery-only
+// leads, labeled "discovery, not proof" (Req 3.3).
+function isDiscoveryLevel(level) {
+    const n = Number(level);
+    return !Number.isFinite(n) || n >= 5;
+}
+// A plain external link. href is a scraped value, so rel disables referrer leakage
+// and the opener relationship; the visible text is an escaped child (Req 7.1).
+function ResearchExtLink({ href }) {
+    if (!href)
+        return React.createElement("span", { style: { color: "var(--text-muted)" } }, "\u2014");
+    return (React.createElement("a", { className: "ext-link", href: href, target: "_blank", rel: "noopener noreferrer nofollow" }, href));
+}
+// ============================================================================
+// Research & Verification view (read-only audit of Eventador's intelligence).
+// Reuses the already-loaded events list for selection; fetches per-event detail
+// and aggregate metrics from the dedicated read-only endpoints (Req 5.2, 6.1/6.2).
+// ============================================================================
+function ResearchView({ events }) {
+    const [metrics, setMetrics] = useState(null);
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [statsError, setStatsError] = useState(false);
+    const [query, setQuery] = useState("");
+    const [selectedId, setSelectedId] = useState(null);
+    const [detail, setDetail] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [detailError, setDetailError] = useState(false);
+    // Metrics are fetched once on mount from the dedicated endpoint (Req 5.2). We
+    // never derive counts from the event list on the client.
+    useEffect(() => {
+        let active = true;
+        fetch(API_BASE + "/api/research/stats")
+            .then((res) => res.json())
+            .then((data) => {
+            if (!active)
+                return;
+            // Only trust an explicit ok:true with a metrics object; anything else
+            // degrades to the empty state rather than fabricating numbers (Req 5.3).
+            if (data && data.ok === true && data.metrics) {
+                setMetrics(data.metrics);
+            }
+            else {
+                setStatsError(true);
+            }
+            setStatsLoading(false);
+        })
+            .catch(() => {
+            if (!active)
+                return;
+            setStatsError(true);
+            setStatsLoading(false);
+        });
+        return () => { active = false; };
+    }, []);
+    // On selecting an event, fetch its research detail. Guards against stale
+    // responses when the selection changes mid-flight.
+    useEffect(() => {
+        if (!selectedId) {
+            setDetail(null);
+            setDetailError(false);
+            setDetailLoading(false);
+            return;
+        }
+        let active = true;
+        setDetailLoading(true);
+        setDetailError(false);
+        setDetail(null);
+        fetch(API_BASE + "/api/research/event?id=" + encodeURIComponent(selectedId))
+            .then((res) => res.json())
+            .then((data) => {
+            if (!active)
+                return;
+            if (data && data.ok === true && data.event) {
+                setDetail(data);
+            }
+            else {
+                setDetailError(true);
+            }
+            setDetailLoading(false);
+        })
+            .catch(() => {
+            if (!active)
+                return;
+            setDetailError(true);
+            setDetailLoading(false);
+        });
+        return () => { active = false; };
+    }, [selectedId]);
+    // Filter the shared events list for the selectable inspector list. Matching is
+    // purely client-side over data already loaded for the other tabs.
+    const inspectorEvents = useMemo(() => {
+        const list = events || [];
+        const q = query.trim().toLowerCase();
+        const matched = q
+            ? list.filter((ev) => {
+                const t = (ev.title || "").toLowerCase();
+                const o = (ev.organizer_name || "").toLowerCase();
+                const c = (ev.city || "").toLowerCase();
+                return t.includes(q) || o.includes(q) || c.includes(q);
+            })
+            : list;
+        return matched.slice(0, 100);
+    }, [events, query]);
+    const renderMetrics = () => {
+        if (statsLoading) {
+            return React.createElement("div", { className: "research-empty" }, "Loading quality metrics\u2026");
+        }
+        // No fabricated fallbacks: when the endpoint is unavailable or reports
+        // ok:false we show a clear, honest empty state (Req 5.3).
+        if (statsError || !metrics) {
+            return (React.createElement("div", { className: "research-empty" },
+                React.createElement("p", { style: { fontSize: "1.05rem", marginBottom: "0.35rem", color: "var(--text)" } }, "Quality metrics are unavailable right now."),
+                React.createElement("p", { style: { fontSize: "0.88rem" } }, "No numbers are shown rather than guessing. Try again shortly.")));
+        }
+        return (React.createElement("div", { className: "stat-grid" }, RESEARCH_STAT_CARDS.map((card) => (React.createElement("div", { key: card.key, className: "stat-card" },
+            React.createElement("div", { className: "stat-value" }, Number(metrics[card.key]) || 0),
+            React.createElement("div", { className: "stat-label" }, card.label),
+            React.createElement("div", { className: "stat-hint" }, card.hint))))));
+    };
+    // ── Verification block (Req 2.1, 2.4) ──────────────────────────────────
+    const renderVerification = (ev) => {
+        const decision = ev.verification_decision || "UNVERIFIED";
+        const tone = DECISION_TONE[decision] || "";
+        const score = ev.verification_score === null || ev.verification_score === undefined
+            ? "—"
+            : ev.verification_score;
+        const tier = ev.publishing_tier || "—";
+        const regUnverified = !ev.registration_url;
+        return (React.createElement("div", { className: "inspector-panel" },
+            React.createElement("h3", null, "Verification"),
+            React.createElement("div", { className: "verify-head" },
+                React.createElement("span", { className: "decision-badge " + tone }, decision),
+                React.createElement("span", { className: "verify-metric" },
+                    "Score: ",
+                    React.createElement("strong", null, score)),
+                React.createElement("span", { className: "verify-metric" },
+                    "Tier: ",
+                    React.createElement("strong", null, tier))),
+            React.createElement("div", { className: "legend" }, "These are evidence-based signals, not an absolute guarantee. No event is ever marked \"100% safe\" or \"guaranteed\" \u2014 always review the evidence and the official page before registering."),
+            regUnverified && React.createElement("div", { className: "reg-note" }, REGISTRATION_UNVERIFIED_SENTENCE)));
+    };
+    // ── Evidence list (Req 2.2) ─────────────────────────────────────────────
+    const renderEvidence = (evidence) => (React.createElement("div", { className: "inspector-panel" },
+        React.createElement("h3", null, "Evidence"),
+        (!evidence || evidence.length === 0) ? (React.createElement("p", { className: "inspector-hint" }, "No evidence rows recorded for this event.")) : (evidence.map((row) => (React.createElement("div", { key: row.evidence_id, className: "evidence-row" },
+            React.createElement("div", { className: "evidence-head" },
+                React.createElement("span", { className: "evidence-type" }, row.evidence_type || "EVIDENCE"),
+                row.supports_claim === 1 || row.supports_claim === true ? (React.createElement("span", { className: "supports-yes" }, "supports claim")) : row.supports_claim === 0 || row.supports_claim === false ? (React.createElement("span", { className: "supports-no" }, "contradicts claim")) : null),
+            React.createElement("div", { className: "evidence-text" }, row.evidence_text),
+            React.createElement("div", { className: "evidence-meta" },
+                row.source_url && React.createElement(ResearchExtLink, { href: row.source_url }),
+                row.observed_at && React.createElement("span", null,
+                    "observed ",
+                    row.observed_at),
+                (row.source_trust !== null && row.source_trust !== undefined) && (React.createElement("span", null,
+                    "trust ",
+                    row.source_trust)))))))));
+    // ── Links table (Req 2.3) ───────────────────────────────────────────────
+    const renderLinks = (links) => (React.createElement("div", { className: "inspector-panel" },
+        React.createElement("h3", null, "Links"),
+        (!links || links.length === 0) ? (React.createElement("p", { className: "inspector-hint" }, "No links recorded for this event.")) : (React.createElement("div", { className: "table-scroll" },
+            React.createElement("table", { className: "data-table" },
+                React.createElement("thead", null,
+                    React.createElement("tr", null,
+                        React.createElement("th", null, "Type"),
+                        React.createElement("th", null, "URL"),
+                        React.createElement("th", null, "Domain"),
+                        React.createElement("th", null, "Relationship"),
+                        React.createElement("th", null, "HTTPS"),
+                        React.createElement("th", null, "Redirects"),
+                        React.createElement("th", null, "Security"),
+                        React.createElement("th", null, "Verification"))),
+                React.createElement("tbody", null, links.map((row) => (React.createElement("tr", { key: row.link_id },
+                    React.createElement("td", null, row.url_type || "—"),
+                    React.createElement("td", null,
+                        React.createElement(ResearchExtLink, { href: row.final_url || row.original_url })),
+                    React.createElement("td", null, row.domain || "—"),
+                    React.createElement("td", null, row.domain_relationship || "—"),
+                    React.createElement("td", null, row.is_https === 1 || row.is_https === true ? "yes" : "no"),
+                    React.createElement("td", null, row.redirect_count === null || row.redirect_count === undefined ? "—" : row.redirect_count),
+                    React.createElement("td", null, row.security_status || "—"),
+                    React.createElement("td", null, row.verification_status || "—")))))))),
+        detail && detail.event && !detail.event.registration_url && (React.createElement("p", { className: "reg-note" }, REGISTRATION_UNVERIFIED_SENTENCE))));
+    // ── Sources list (Req 3.1, 3.3) ─────────────────────────────────────────
+    const renderSources = (sources) => (React.createElement("div", { className: "inspector-panel" },
+        React.createElement("h3", null, "Sources"),
+        (!sources || sources.length === 0) ? (React.createElement("p", { className: "inspector-hint" }, "No source provenance recorded for this event.")) : (sources.map((row) => {
+            const lvl = row.source_level;
+            const discovery = isDiscoveryLevel(lvl);
+            return (React.createElement("div", { key: row.id, className: "source-row" },
+                React.createElement("span", { className: "level-chip" }, lvl === null || lvl === undefined ? "L?" : "L" + lvl),
+                React.createElement(ResearchExtLink, { href: row.source_url }),
+                discovery && React.createElement("span", { className: "discovery-tag" }, "discovery, not proof")));
+        }))));
+    // ── Change timeline (Req 4.1, 4.3) ──────────────────────────────────────
+    // Newest-first (the endpoint orders by detected_at DESC). Conflicting changes
+    // to the same field are FLAGGED, never resolved.
+    const renderTimeline = (changes) => {
+        const list = changes || [];
+        const perField = {};
+        list.forEach((c) => { perField[c.field] = (perField[c.field] || 0) + 1; });
+        return (React.createElement("div", { className: "inspector-panel" },
+            React.createElement("h3", null, "Change timeline"),
+            list.length === 0 ? (React.createElement("p", { className: "inspector-hint" }, "No recorded changes for this event.")) : (list.map((row) => {
+                const conflict = perField[row.field] > 1;
+                return (React.createElement("div", { key: row.change_id, className: "timeline-item" + (conflict ? " conflict" : "") },
+                    React.createElement("div", { className: "timeline-field" },
+                        row.field,
+                        conflict && React.createElement("span", { className: "conflict-flag" }, "conflict")),
+                    React.createElement("div", { className: "timeline-change" },
+                        React.createElement("span", { className: "timeline-old" }, row.old_value === null || row.old_value === undefined ? "∅" : String(row.old_value)),
+                        " → ",
+                        React.createElement("span", { className: "timeline-new" }, row.new_value === null || row.new_value === undefined ? "∅" : String(row.new_value))),
+                    React.createElement("div", { className: "timeline-time" }, row.detected_at)));
+            }))));
+    };
+    // ── Freshness signals (Req 4.2) ─────────────────────────────────────────
+    const renderFreshness = (ev) => {
+        const rows = [
+            ["First seen", ev.first_seen],
+            ["Last seen", ev.last_seen],
+            ["Last verified", ev.last_verified],
+            ["Last link check", ev.last_link_check]
+        ].filter(([, v]) => v);
+        if (rows.length === 0)
+            return null;
+        return (React.createElement("div", { className: "inspector-panel" },
+            React.createElement("h3", null, "Freshness"),
+            React.createElement("div", { className: "table-scroll" },
+                React.createElement("table", { className: "data-table" },
+                    React.createElement("tbody", null, rows.map(([label, value]) => (React.createElement("tr", { key: label },
+                        React.createElement("th", { style: { width: "40%" } }, label),
+                        React.createElement("td", null, value)))))))));
+    };
+    const renderDetail = () => {
+        if (!selectedId) {
+            return (React.createElement("div", { className: "inspector-panel" },
+                React.createElement("p", { className: "inspector-hint" }, "Select an event from the list to inspect its verification evidence, links, sources, and change history.")));
+        }
+        if (detailLoading) {
+            return (React.createElement("div", { className: "inspector-panel" },
+                React.createElement("p", { className: "inspector-hint" }, "Loading event research detail\u2026")));
+        }
+        if (detailError || !detail || !detail.event) {
+            return (React.createElement("div", { className: "inspector-panel" },
+                React.createElement("p", { className: "inspector-hint" }, "This event's research detail is unavailable. It may not be public, or the lookup failed \u2014 no data is shown rather than guessing.")));
+        }
+        const ev = detail.event;
+        return (React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "inspector-panel", style: { paddingBottom: "0.75rem" } },
+                React.createElement("h3", null, "Event"),
+                React.createElement("div", { className: "timeline-field", style: { fontSize: "1.1rem" } }, ev.title),
+                React.createElement("p", { style: { color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "0.25rem" } },
+                    ev.organizer_name || "Unknown organizer",
+                    ev.city ? " · " + ev.city : "",
+                    ev.status ? " · " + ev.status : "")),
+            renderVerification(ev),
+            renderEvidence(detail.evidence),
+            renderLinks(detail.links),
+            renderSources(detail.sources),
+            renderTimeline(detail.changes),
+            renderFreshness(ev)));
+    };
+    return (React.createElement("div", { className: "page-container research-wrapper" },
+        React.createElement("div", { className: "section-header" },
+            React.createElement("div", null,
+                React.createElement("h2", { className: "section-title" }, "Research & Verification"),
+                React.createElement("p", { className: "section-sub" }, "Inspect the evidence, provenance, change history, and quality metrics behind each verified event. Discovery sources are shown as leads, not proof \u2014 every decision carries its own audit trail."))),
+        renderMetrics(),
+        React.createElement("div", { className: "section-header", style: { marginBottom: "1rem" } },
+            React.createElement("div", null,
+                React.createElement("h2", { className: "section-title", style: { fontSize: "1.4rem" } }, "Event inspector"))),
+        React.createElement("div", { className: "inspector" },
+            React.createElement("div", { className: "inspector-list" },
+                React.createElement("input", { type: "text", className: "inspector-search", placeholder: "Search events to inspect\u2026", value: query, onChange: (e) => setQuery(e.target.value) }),
+                inspectorEvents.length === 0 ? (React.createElement("p", { className: "inspector-hint" }, "No events match.")) : (inspectorEvents.map((ev) => (React.createElement("button", { key: ev.event_id, type: "button", className: "inspector-item" + (selectedId === ev.event_id ? " active" : ""), "aria-current": selectedId === ev.event_id ? "true" : undefined, onClick: () => setSelectedId(ev.event_id) },
+                    ev.title,
+                    React.createElement("span", { className: "inspector-item-sub" },
+                        (ev.organizer_name || "Unknown organizer"),
+                        ev.city ? " · " + ev.city : "")))))),
+            React.createElement("div", { className: "inspector-detail" }, renderDetail()))));
+}
 function App() {
-    // Navigation tabs: 'home' | 'explore' | 'hackathons' | 'meetups' | 'nearme' | 'osint' | 'bots'
+    // Navigation tabs: 'home' | 'explore' | 'hackathons' | 'meetups' | 'nearme' | 'osint' | 'bots' | 'research'
     const [activeTab, setActiveTab] = useState(() => {
         const hash = window.location.hash.replace("#", "");
-        return ["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash) ? hash : "home";
+        return ["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots", "research"].includes(hash) ? hash : "home";
     });
     // Events dataset (Merged smoothly without clashing or duplicate cards)
     const [events, setEvents] = useState(CURATED_SEED_EVENTS);
@@ -612,7 +924,7 @@ function App() {
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.replace("#", "");
-            if (["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash)) {
+            if (["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots", "research"].includes(hash)) {
                 setActiveTab(hash);
             }
         };
@@ -888,7 +1200,8 @@ function App() {
                     React.createElement("span", { className: "nav-link " + (activeTab === "meetups" ? "active" : ""), onClick: () => navigateTo("meetups") }, "Meetups"),
                     React.createElement("span", { className: "nav-link " + (activeTab === "nearme" ? "active" : ""), onClick: () => navigateTo("nearme") }, "Near Me"),
                     React.createElement("span", { className: "nav-link " + (activeTab === "osint" ? "active" : ""), onClick: () => navigateTo("osint") }, "OSINT Tools"),
-                    React.createElement("span", { className: "nav-link " + (activeTab === "bots" ? "active" : ""), onClick: () => navigateTo("bots") }, "Bots")),
+                    React.createElement("span", { className: "nav-link " + (activeTab === "bots" ? "active" : ""), onClick: () => navigateTo("bots") }, "Bots"),
+                    React.createElement("span", { className: "nav-link " + (activeTab === "research" ? "active" : ""), onClick: () => navigateTo("research") }, "Research")),
                 React.createElement("div", { className: "nav-actions" },
                     React.createElement("button", { className: "btn-action-bot", onClick: () => navigateTo("bots") }, "Add Bot \u2197"),
                     React.createElement("div", { className: "profile-wrap", ref: profileRef },
@@ -936,7 +1249,8 @@ function App() {
                 React.createElement("button", { className: "mobile-tab-pill " + (activeTab === "meetups" ? "active" : ""), onClick: () => navigateTo("meetups") }, "Meetups"),
                 React.createElement("button", { className: "mobile-tab-pill " + (activeTab === "nearme" ? "active" : ""), onClick: () => navigateTo("nearme") }, "Near Me"),
                 React.createElement("button", { className: "mobile-tab-pill " + (activeTab === "osint" ? "active" : ""), onClick: () => navigateTo("osint") }, "OSINT Tools"),
-                React.createElement("button", { className: "mobile-tab-pill " + (activeTab === "bots" ? "active" : ""), onClick: () => navigateTo("bots") }, "Bots"))),
+                React.createElement("button", { className: "mobile-tab-pill " + (activeTab === "bots" ? "active" : ""), onClick: () => navigateTo("bots") }, "Bots"),
+                React.createElement("button", { className: "mobile-tab-pill " + (activeTab === "research" ? "active" : ""), onClick: () => navigateTo("research") }, "Research"))),
         activeTab === "home" && (React.createElement("div", null,
             React.createElement("header", { className: "hero-container" },
                 React.createElement("div", { className: "hero-content" },
@@ -1296,6 +1610,7 @@ function App() {
                     React.createElement("div", { className: "setup-step-num" }, "03"),
                     React.createElement("h3", { style: { fontSize: "1.1rem", fontWeight: 800, marginBottom: "0.4rem" } }, "Autonomous Verified Stream"),
                     React.createElement("p", { style: { fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 } }, "Your community receives real-time verified event passes, deadline alerts, and official registration links without any manual posting."))))),
+        activeTab === "research" && (React.createElement(ResearchView, { events: events })),
         selectedEvent && (React.createElement("div", { className: "modal-backdrop", onClick: () => setSelectedEvent(null) },
             React.createElement("div", { className: "modal-box", onClick: (e) => e.stopPropagation() },
                 React.createElement("button", { className: "modal-close", onClick: () => setSelectedEvent(null) }, "\u2715"),

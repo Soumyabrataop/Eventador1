@@ -509,11 +509,477 @@ function detectContinentFromTimezone() {
   return "ALL";
 }
 
+// Origin of the Cloudflare Worker that serves the read-only JSON API. The Pages
+// portal and the Worker live on different origins, so research endpoints use the
+// same absolute base as the live events fetch below (never a relative path).
+const API_BASE = "https://eventador.eventador.workers.dev";
+
+// Research stat cards. Labels map 1:1 to the /api/research/stats metrics keys; no
+// number is ever computed or invented on the client — each value comes straight
+// from the endpoint (Req 5.2, 7.1).
+const RESEARCH_STAT_CARDS = [
+  { key: "discovered", label: "Discovered", hint: "Leads found by discovery (not proof)" },
+  { key: "verified", label: "Verified", hint: "Passed verification scoring" },
+  { key: "published", label: "Published", hint: "Live on the public portal" },
+  { key: "rejected", label: "Rejected", hint: "Failed verification or safety checks" },
+  { key: "suspicious", label: "Suspicious", hint: "Flagged for closer review" },
+  { key: "needs_review", label: "Needs review", hint: "Awaiting a human decision" },
+  { key: "broken_links", label: "Broken links", hint: "Links in a problem security state" }
+];
+
+// Decision enums (Req 2.4). The badge renders ONLY these literals; a decision
+// outside this set is shown verbatim but styled neutrally. No "100% safe" or
+// "guaranteed" language ever appears.
+const DECISION_TONE = {
+  VERIFIED_OFFICIAL: "good",
+  VERIFIED_BY_MULTIPLE_SOURCES: "good",
+  LIKELY_LEGITIMATE: "warn",
+  UNVERIFIED: "warn",
+  SUSPICIOUS: "bad",
+  REJECTED: "bad"
+};
+
+// Exact fallback sentence, copied verbatim from the notification templates so the
+// portal and the alerts say the same thing (Req 2.5).
+const REGISTRATION_UNVERIFIED_SENTENCE =
+  "Registration link could not be independently verified.";
+
+// Source levels L1–L4 are authoritative/confirming tiers; L5–L7 are discovery-only
+// leads, labeled "discovery, not proof" (Req 3.3).
+function isDiscoveryLevel(level) {
+  const n = Number(level);
+  return !Number.isFinite(n) || n >= 5;
+}
+
+// A plain external link. href is a scraped value, so rel disables referrer leakage
+// and the opener relationship; the visible text is an escaped child (Req 7.1).
+function ResearchExtLink({ href }) {
+  if (!href) return <span style={{ color: "var(--text-muted)" }}>—</span>;
+  return (
+    <a className="ext-link" href={href} target="_blank" rel="noopener noreferrer nofollow">
+      {href}
+    </a>
+  );
+}
+
+// ============================================================================
+// Research & Verification view (read-only audit of Eventador's intelligence).
+// Reuses the already-loaded events list for selection; fetches per-event detail
+// and aggregate metrics from the dedicated read-only endpoints (Req 5.2, 6.1/6.2).
+// ============================================================================
+function ResearchView({ events }) {
+  const [metrics, setMetrics] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
+
+  const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [detail, setDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState(false);
+
+  // Metrics are fetched once on mount from the dedicated endpoint (Req 5.2). We
+  // never derive counts from the event list on the client.
+  useEffect(() => {
+    let active = true;
+    fetch(API_BASE + "/api/research/stats")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active) return;
+        // Only trust an explicit ok:true with a metrics object; anything else
+        // degrades to the empty state rather than fabricating numbers (Req 5.3).
+        if (data && data.ok === true && data.metrics) {
+          setMetrics(data.metrics);
+        } else {
+          setStatsError(true);
+        }
+        setStatsLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setStatsError(true);
+        setStatsLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
+
+  // On selecting an event, fetch its research detail. Guards against stale
+  // responses when the selection changes mid-flight.
+  useEffect(() => {
+    if (!selectedId) {
+      setDetail(null);
+      setDetailError(false);
+      setDetailLoading(false);
+      return;
+    }
+    let active = true;
+    setDetailLoading(true);
+    setDetailError(false);
+    setDetail(null);
+    fetch(API_BASE + "/api/research/event?id=" + encodeURIComponent(selectedId))
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active) return;
+        if (data && data.ok === true && data.event) {
+          setDetail(data);
+        } else {
+          setDetailError(true);
+        }
+        setDetailLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setDetailError(true);
+        setDetailLoading(false);
+      });
+    return () => { active = false; };
+  }, [selectedId]);
+
+  // Filter the shared events list for the selectable inspector list. Matching is
+  // purely client-side over data already loaded for the other tabs.
+  const inspectorEvents = useMemo(() => {
+    const list = events || [];
+    const q = query.trim().toLowerCase();
+    const matched = q
+      ? list.filter((ev) => {
+          const t = (ev.title || "").toLowerCase();
+          const o = (ev.organizer_name || "").toLowerCase();
+          const c = (ev.city || "").toLowerCase();
+          return t.includes(q) || o.includes(q) || c.includes(q);
+        })
+      : list;
+    return matched.slice(0, 100);
+  }, [events, query]);
+
+  const renderMetrics = () => {
+    if (statsLoading) {
+      return <div className="research-empty">Loading quality metrics…</div>;
+    }
+    // No fabricated fallbacks: when the endpoint is unavailable or reports
+    // ok:false we show a clear, honest empty state (Req 5.3).
+    if (statsError || !metrics) {
+      return (
+        <div className="research-empty">
+          <p style={{ fontSize: "1.05rem", marginBottom: "0.35rem", color: "var(--text)" }}>
+            Quality metrics are unavailable right now.
+          </p>
+          <p style={{ fontSize: "0.88rem" }}>
+            No numbers are shown rather than guessing. Try again shortly.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="stat-grid">
+        {RESEARCH_STAT_CARDS.map((card) => (
+          <div key={card.key} className="stat-card">
+            <div className="stat-value">{Number(metrics[card.key]) || 0}</div>
+            <div className="stat-label">{card.label}</div>
+            <div className="stat-hint">{card.hint}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // ── Verification block (Req 2.1, 2.4) ──────────────────────────────────
+  const renderVerification = (ev) => {
+    const decision = ev.verification_decision || "UNVERIFIED";
+    const tone = DECISION_TONE[decision] || "";
+    const score =
+      ev.verification_score === null || ev.verification_score === undefined
+        ? "—"
+        : ev.verification_score;
+    const tier = ev.publishing_tier || "—";
+    const regUnverified = !ev.registration_url;
+    return (
+      <div className="inspector-panel">
+        <h3>Verification</h3>
+        <div className="verify-head">
+          <span className={"decision-badge " + tone}>{decision}</span>
+          <span className="verify-metric">Score: <strong>{score}</strong></span>
+          <span className="verify-metric">Tier: <strong>{tier}</strong></span>
+        </div>
+        <div className="legend">
+          These are evidence-based signals, not an absolute guarantee. No event is ever
+          marked "100% safe" or "guaranteed" — always review the evidence and the official
+          page before registering.
+        </div>
+        {regUnverified && <div className="reg-note">{REGISTRATION_UNVERIFIED_SENTENCE}</div>}
+      </div>
+    );
+  };
+
+  // ── Evidence list (Req 2.2) ─────────────────────────────────────────────
+  const renderEvidence = (evidence) => (
+    <div className="inspector-panel">
+      <h3>Evidence</h3>
+      {(!evidence || evidence.length === 0) ? (
+        <p className="inspector-hint">No evidence rows recorded for this event.</p>
+      ) : (
+        evidence.map((row) => (
+          <div key={row.evidence_id} className="evidence-row">
+            <div className="evidence-head">
+              <span className="evidence-type">{row.evidence_type || "EVIDENCE"}</span>
+              {row.supports_claim === 1 || row.supports_claim === true ? (
+                <span className="supports-yes">supports claim</span>
+              ) : row.supports_claim === 0 || row.supports_claim === false ? (
+                <span className="supports-no">contradicts claim</span>
+              ) : null}
+            </div>
+            <div className="evidence-text">{row.evidence_text}</div>
+            <div className="evidence-meta">
+              {row.source_url && <ResearchExtLink href={row.source_url} />}
+              {row.observed_at && <span>observed {row.observed_at}</span>}
+              {(row.source_trust !== null && row.source_trust !== undefined) && (
+                <span>trust {row.source_trust}</span>
+              )}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  // ── Links table (Req 2.3) ───────────────────────────────────────────────
+  const renderLinks = (links) => (
+    <div className="inspector-panel">
+      <h3>Links</h3>
+      {(!links || links.length === 0) ? (
+        <p className="inspector-hint">No links recorded for this event.</p>
+      ) : (
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Type</th><th>URL</th><th>Domain</th><th>Relationship</th>
+                <th>HTTPS</th><th>Redirects</th><th>Security</th><th>Verification</th>
+              </tr>
+            </thead>
+            <tbody>
+              {links.map((row) => (
+                <tr key={row.link_id}>
+                  <td>{row.url_type || "—"}</td>
+                  <td><ResearchExtLink href={row.final_url || row.original_url} /></td>
+                  <td>{row.domain || "—"}</td>
+                  <td>{row.domain_relationship || "—"}</td>
+                  <td>{row.is_https === 1 || row.is_https === true ? "yes" : "no"}</td>
+                  <td>{row.redirect_count === null || row.redirect_count === undefined ? "—" : row.redirect_count}</td>
+                  <td>{row.security_status || "—"}</td>
+                  <td>{row.verification_status || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {/* Exact unverified-registration fallback sentence (Req 2.5). */}
+      {detail && detail.event && !detail.event.registration_url && (
+        <p className="reg-note">{REGISTRATION_UNVERIFIED_SENTENCE}</p>
+      )}
+    </div>
+  );
+
+  // ── Sources list (Req 3.1, 3.3) ─────────────────────────────────────────
+  const renderSources = (sources) => (
+    <div className="inspector-panel">
+      <h3>Sources</h3>
+      {(!sources || sources.length === 0) ? (
+        <p className="inspector-hint">No source provenance recorded for this event.</p>
+      ) : (
+        sources.map((row) => {
+          const lvl = row.source_level;
+          const discovery = isDiscoveryLevel(lvl);
+          return (
+            <div key={row.id} className="source-row">
+              <span className="level-chip">
+                {lvl === null || lvl === undefined ? "L?" : "L" + lvl}
+              </span>
+              <ResearchExtLink href={row.source_url} />
+              {discovery && <span className="discovery-tag">discovery, not proof</span>}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+
+  // ── Change timeline (Req 4.1, 4.3) ──────────────────────────────────────
+  // Newest-first (the endpoint orders by detected_at DESC). Conflicting changes
+  // to the same field are FLAGGED, never resolved.
+  const renderTimeline = (changes) => {
+    const list = changes || [];
+    const perField = {};
+    list.forEach((c) => { perField[c.field] = (perField[c.field] || 0) + 1; });
+    return (
+      <div className="inspector-panel">
+        <h3>Change timeline</h3>
+        {list.length === 0 ? (
+          <p className="inspector-hint">No recorded changes for this event.</p>
+        ) : (
+          list.map((row) => {
+            const conflict = perField[row.field] > 1;
+            return (
+              <div key={row.change_id} className={"timeline-item" + (conflict ? " conflict" : "")}>
+                <div className="timeline-field">
+                  {row.field}
+                  {conflict && <span className="conflict-flag">conflict</span>}
+                </div>
+                <div className="timeline-change">
+                  <span className="timeline-old">{row.old_value === null || row.old_value === undefined ? "∅" : String(row.old_value)}</span>
+                  {" → "}
+                  <span className="timeline-new">{row.new_value === null || row.new_value === undefined ? "∅" : String(row.new_value)}</span>
+                </div>
+                <div className="timeline-time">{row.detected_at}</div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    );
+  };
+
+  // ── Freshness signals (Req 4.2) ─────────────────────────────────────────
+  const renderFreshness = (ev) => {
+    const rows = [
+      ["First seen", ev.first_seen],
+      ["Last seen", ev.last_seen],
+      ["Last verified", ev.last_verified],
+      ["Last link check", ev.last_link_check]
+    ].filter(([, v]) => v);
+    if (rows.length === 0) return null;
+    return (
+      <div className="inspector-panel">
+        <h3>Freshness</h3>
+        <div className="table-scroll">
+          <table className="data-table">
+            <tbody>
+              {rows.map(([label, value]) => (
+                <tr key={label}>
+                  <th style={{ width: "40%" }}>{label}</th>
+                  <td>{value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDetail = () => {
+    if (!selectedId) {
+      return (
+        <div className="inspector-panel">
+          <p className="inspector-hint">
+            Select an event from the list to inspect its verification evidence,
+            links, sources, and change history.
+          </p>
+        </div>
+      );
+    }
+    if (detailLoading) {
+      return (
+        <div className="inspector-panel">
+          <p className="inspector-hint">Loading event research detail…</p>
+        </div>
+      );
+    }
+    if (detailError || !detail || !detail.event) {
+      return (
+        <div className="inspector-panel">
+          <p className="inspector-hint">
+            This event's research detail is unavailable. It may not be public, or the
+            lookup failed — no data is shown rather than guessing.
+          </p>
+        </div>
+      );
+    }
+    const ev = detail.event;
+    return (
+      <React.Fragment>
+        <div className="inspector-panel" style={{ paddingBottom: "0.75rem" }}>
+          <h3>Event</h3>
+          <div className="timeline-field" style={{ fontSize: "1.1rem" }}>{ev.title}</div>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
+            {ev.organizer_name || "Unknown organizer"}
+            {ev.city ? " · " + ev.city : ""}
+            {ev.status ? " · " + ev.status : ""}
+          </p>
+        </div>
+        {renderVerification(ev)}
+        {renderEvidence(detail.evidence)}
+        {renderLinks(detail.links)}
+        {renderSources(detail.sources)}
+        {renderTimeline(detail.changes)}
+        {renderFreshness(ev)}
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <div className="page-container research-wrapper">
+      <div className="section-header">
+        <div>
+          <h2 className="section-title">Research &amp; Verification</h2>
+          <p className="section-sub">
+            Inspect the evidence, provenance, change history, and quality metrics behind each
+            verified event. Discovery sources are shown as leads, not proof — every decision
+            carries its own audit trail.
+          </p>
+        </div>
+      </div>
+
+      {/* Aggregate quality metrics (Req 5.1). */}
+      {renderMetrics()}
+
+      {/* Event inspector (Req 2–4): select an event to see its full audit trail.
+          Reuses the already-loaded events list for selection. */}
+      <div className="section-header" style={{ marginBottom: "1rem" }}>
+        <div>
+          <h2 className="section-title" style={{ fontSize: "1.4rem" }}>Event inspector</h2>
+        </div>
+      </div>
+      <div className="inspector">
+        <div className="inspector-list">
+          <input
+            type="text"
+            className="inspector-search"
+            placeholder="Search events to inspect…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {inspectorEvents.length === 0 ? (
+            <p className="inspector-hint">No events match.</p>
+          ) : (
+            inspectorEvents.map((ev) => (
+              <button
+                key={ev.event_id}
+                type="button"
+                className={"inspector-item" + (selectedId === ev.event_id ? " active" : "")}
+                aria-current={selectedId === ev.event_id ? "true" : undefined}
+                onClick={() => setSelectedId(ev.event_id)}
+              >
+                {ev.title}
+                <span className="inspector-item-sub">
+                  {(ev.organizer_name || "Unknown organizer")}
+                  {ev.city ? " · " + ev.city : ""}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+        <div className="inspector-detail">{renderDetail()}</div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
-  // Navigation tabs: 'home' | 'explore' | 'hackathons' | 'meetups' | 'nearme' | 'osint' | 'bots'
+  // Navigation tabs: 'home' | 'explore' | 'hackathons' | 'meetups' | 'nearme' | 'osint' | 'bots' | 'research'
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.replace("#", "");
-    return ["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash) ? hash : "home";
+    return ["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots", "research"].includes(hash) ? hash : "home";
   });
 
   // Events dataset (Merged smoothly without clashing or duplicate cards)
@@ -615,7 +1081,7 @@ function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "");
-      if (["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots"].includes(hash)) {
+      if (["home", "explore", "hackathons", "meetups", "nearme", "osint", "bots", "research"].includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -956,6 +1422,9 @@ function App() {
             <span className={"nav-link " + (activeTab === "bots" ? "active" : "")} onClick={() => navigateTo("bots")}>
               Bots
             </span>
+            <span className={"nav-link " + (activeTab === "research" ? "active" : "")} onClick={() => navigateTo("research")}>
+              Research
+            </span>
           </div>
 
           <div className="nav-actions">
@@ -1078,6 +1547,9 @@ function App() {
           </button>
           <button className={"mobile-tab-pill " + (activeTab === "bots" ? "active" : "")} onClick={() => navigateTo("bots")}>
             Bots
+          </button>
+          <button className={"mobile-tab-pill " + (activeTab === "research" ? "active" : "")} onClick={() => navigateTo("research")}>
+            Research
           </button>
         </div>
       </div>
@@ -1853,6 +2325,14 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ====================================================================
+          PAGE 8: RESEARCH & VERIFICATION (read-only audit of the intelligence
+          Eventador produces — evidence, provenance, change history, metrics)
+          ==================================================================== */}
+      {activeTab === "research" && (
+        <ResearchView events={events} />
       )}
 
       {/* ====================================================================

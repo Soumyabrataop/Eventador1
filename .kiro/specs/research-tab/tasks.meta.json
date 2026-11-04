@@ -1,0 +1,141 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Confirm the data model against the real schema": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813340999
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813360799
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813516497
+      }
+    ],
+    "2. Add the research stats endpoint to the Worker": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813344404
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813530397
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813856465
+      }
+    ],
+    "3. Add the per-event research endpoint to the Worker": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813345210
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813867746
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793814112385
+      }
+    ],
+    "4. Add tab navigation to the SPA": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813345840
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793814448832
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793815014857
+      }
+    ],
+    "5. Build the ResearchView metrics panel": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813347064
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793815023554
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793815398866
+      }
+    ],
+    "6. Build the event inspector in ResearchView": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813347669
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793815415786
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793816209195
+      }
+    ],
+    "7. Add tests": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813348241
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793816215061
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793816578606
+      }
+    ],
+    "8. Verify build and run the suite": [
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793813349120
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793816584979
+      },
+      {
+        "executionId": "5740c065-9f45-4911-b8a0-be695ef7d6b1",
+        "chatSessionId": "sess_ac06c4e4-f0ca-4a32-8290-af4de3c193ac",
+        "timestamp": 1793818213069
+      }
+    ]
+  }
+}

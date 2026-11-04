@@ -1348,6 +1348,300 @@
         width: 245px;
       }
     }
+
+    /* ==========================================================================
+       Research & Verification tab — read-only audit view of the intelligence
+       Eventador produces. Reuses the existing palette variables; no new colors.
+       ========================================================================== */
+    .research-wrapper { width: 100%; }
+
+    /* Aggregate quality metrics grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.15rem;
+      box-shadow: var(--card-shadow);
+    }
+    .stat-value {
+      font-size: 1.9rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-top: 0.25rem;
+    }
+    .stat-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+      line-height: 1.4;
+    }
+
+    .research-empty {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      padding: 2rem 1.25rem;
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Event inspector: selectable list on the left, detail on the right */
+    .inspector {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    .inspector-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.85rem;
+      max-height: 640px;
+      overflow-y: auto;
+      box-shadow: var(--card-shadow);
+    }
+    .inspector-search {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-subtle);
+      color: var(--text);
+      font-size: 0.88rem;
+      margin-bottom: 0.65rem;
+    }
+    .inspector-search:focus { outline: none; border-color: var(--border-focus); }
+    .inspector-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      padding: 0.55rem 0.65rem;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .inspector-item:hover { background: var(--surface-hover); }
+    .inspector-item.active {
+      background: var(--surface-subtle);
+      border-color: var(--border-focus);
+    }
+    .inspector-item-sub {
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .inspector-detail { min-width: 0; }
+    .inspector-hint { color: var(--text-muted); font-size: 0.9rem; }
+
+    .inspector-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.15rem 1.25rem;
+      margin-bottom: 1.1rem;
+      box-shadow: var(--card-shadow);
+    }
+    .inspector-panel h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 0.7rem;
+      color: var(--text);
+    }
+
+    .verify-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 0.6rem;
+    }
+    .decision-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 7px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+    }
+    .decision-badge.good {
+      background: var(--badge-free-bg);
+      color: var(--badge-free-text);
+      border-color: var(--badge-free-border);
+    }
+    .decision-badge.warn {
+      background: var(--badge-paid-bg);
+      color: var(--badge-paid-text);
+      border-color: var(--badge-paid-border);
+    }
+    .decision-badge.bad {
+      background: var(--badge-local-bg);
+      color: var(--badge-local-text);
+      border-color: var(--badge-local-border);
+    }
+    .verify-metric { font-size: 0.85rem; color: var(--text-muted); }
+    .verify-metric strong { color: var(--text); }
+    .legend {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      border-left: 3px solid var(--border);
+      padding-left: 0.7rem;
+    }
+    .reg-note {
+      margin-top: 0.65rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--badge-paid-text);
+      background: var(--badge-paid-bg);
+      border: 1px solid var(--badge-paid-border);
+      border-radius: 8px;
+      padding: 0.5rem 0.65rem;
+    }
+
+    .evidence-row {
+      border-top: 1px solid var(--border);
+      padding: 0.65rem 0;
+    }
+    .evidence-row:first-of-type { border-top: none; padding-top: 0; }
+    .evidence-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.3rem;
+    }
+    .evidence-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+    .supports-yes { font-size: 0.72rem; font-weight: 700; color: var(--color-green); }
+    .supports-no { font-size: 0.72rem; font-weight: 700; color: var(--color-red); }
+    .evidence-text { font-size: 0.86rem; color: var(--text); line-height: 1.5; }
+    .evidence-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    .ext-link {
+      color: var(--color-blue);
+      word-break: break-all;
+      font-size: 0.82rem;
+      text-decoration: none;
+    }
+    .ext-link:hover { text-decoration: underline; }
+
+    .table-scroll { overflow-x: auto; }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .data-table th, .data-table td {
+      text-align: left;
+      padding: 0.45rem 0.55rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .data-table th {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .source-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .source-row:first-of-type { border-top: none; }
+    .level-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      background: var(--badge-type-bg);
+      color: var(--badge-type-text);
+      border: 1px solid var(--badge-type-border);
+    }
+    .discovery-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .timeline-item {
+      border-left: 3px solid var(--border);
+      padding: 0.5rem 0 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .timeline-item.conflict { border-left-color: var(--color-orange); }
+    .timeline-field {
+      font-weight: 700;
+      font-size: 0.86rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .conflict-flag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--color-orange);
+      border: 1px solid var(--color-orange);
+      border-radius: 5px;
+      padding: 0.05rem 0.35rem;
+    }
+    .timeline-change {
+      font-size: 0.82rem;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 0.2rem;
+      word-break: break-word;
+    }
+    .timeline-old { color: var(--text-muted); }
+    .timeline-new { color: var(--text); font-weight: 600; }
+    .timeline-time { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    @media (max-width: 860px) {
+      .inspector { grid-template-columns: 1fr; }
+      .inspector-list { max-height: 320px; }
+    }
   </style>
 </head>
 <body>

@@ -231,6 +231,98 @@ export default {
       return Response.json({ ok: true });
     }
 
+    // 5. Research Stats API (read-only aggregate metrics over existing tables)
+    if (url.pathname === "/api/research/stats") {
+      try {
+        const store = createD1Store(env.DB);
+
+        // Bounded GROUP BY aggregate over events.status (at most one row per status).
+        const statusRows = await store.query<{ status: string; n: number }>(
+          "SELECT status, COUNT(*) AS n FROM events GROUP BY status",
+        );
+        const counts = new Map<string, number>();
+        for (const row of statusRows) counts.set(row.status, Number(row.n) || 0);
+
+        // Broken-link count: problem security states only (see schema-notes.md).
+        const brokenRow = await store.queryOne<{ broken: number }>(
+          "SELECT COUNT(*) AS broken FROM event_links WHERE security_status IN ('FLAGGED','MALICIOUS_REPUTATION','UNREACHABLE')",
+        );
+
+        const metrics = {
+          discovered: counts.get("DISCOVERED") ?? 0,
+          verified: counts.get("VERIFIED") ?? 0,
+          published: counts.get("PUBLISHED") ?? 0,
+          rejected: counts.get("REJECTED") ?? 0,
+          suspicious: counts.get("SUSPICIOUS") ?? 0,
+          needs_review: counts.get("NEEDS_REVIEW") ?? 0,
+          broken_links: Number(brokenRow?.broken) || 0,
+        };
+
+        return Response.json({ ok: true, metrics }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({ ok: false, error: e instanceof Error ? e.message : "QUERY_FAILED" }, { status: 500, headers: corsHeaders });
+      }
+    }
+
+    // 6. Per-event Research API (read-only evidence/links/sources/changes for one public event)
+    if (url.pathname === "/api/research/event") {
+      try {
+        const id = url.searchParams.get("id");
+        if (!id) {
+          return Response.json({ ok: false, error: "MISSING_ID" }, { status: 400, headers: corsHeaders });
+        }
+
+        const store = createD1Store(env.DB);
+
+        // Only expose events already in the public set; unpublished/rejected rows never leak.
+        const event = await store.queryOne(
+          `SELECT event_id,title,organizer_name,categories,format,city,country,venue,timezone,
+                  start_date,end_date,registration_deadline,registration_status,
+                  event_url,registration_url,registration_unverified_note,event_type,is_free,price_detail,
+                  status,verification_decision,verification_score,source_trust_score,
+                  india_relevance_score,freshness_score,publishing_tier,
+                  first_seen,last_seen,last_verified,last_link_check
+           FROM events
+           WHERE event_id = ? AND status IN ('VERIFIED','PUBLISHED','UPDATED')`,
+          id,
+        );
+        if (!event) {
+          return Response.json({ ok: false, error: "NOT_FOUND" }, { status: 404, headers: corsHeaders });
+        }
+
+        // Each related read is bounded with a LIMIT to respect D1 free-tier read limits.
+        const evidence = await store.query(
+          `SELECT evidence_id, source_url, evidence_type, evidence_text, observed_at, source_trust, supports_claim
+           FROM verification_evidence WHERE event_id = ? LIMIT ?`,
+          id,
+          100,
+        );
+        const links = await store.query(
+          `SELECT link_id, url_type, original_url, final_url, domain, is_https, redirect_count,
+                  domain_relationship, security_status, verification_status
+           FROM event_links WHERE event_id = ? LIMIT ?`,
+          id,
+          100,
+        );
+        const sources = await store.query(
+          `SELECT id, source_id, source_url, source_level, observed_at
+           FROM event_sources WHERE event_id = ? LIMIT ?`,
+          id,
+          100,
+        );
+        const changes = await store.query(
+          `SELECT change_id, field, old_value, new_value, detected_at
+           FROM event_changes WHERE event_id = ? ORDER BY detected_at DESC LIMIT ?`,
+          id,
+          100,
+        );
+
+        return Response.json({ ok: true, event, evidence, links, sources, changes }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({ ok: false, error: e instanceof Error ? e.message : "QUERY_FAILED" }, { status: 500, headers: corsHeaders });
+      }
+    }
+
     return Response.json({ ok: false, error: "Not found. Visit / for Eventador Web Portal or /health." }, { status: 404 });
   },
 
